@@ -36,15 +36,26 @@ jq 'del(.scripts.release, .scripts.postpublish, .scripts.prepare, .scripts.postb
 # remove dependencies we don't want
 jq 'del(.devDependencies."standard-version", .devDependencies."open-cli", .devDependencies."uglify-js", .devDependencies."tslint")' "$PACKAGE_JSON" > tmp.json && mv tmp.json "$PACKAGE_JSON"
 
+# set output files and types
+jq '.main = "dist/index.js" | .types = "dist/index.d.ts"' "$PACKAGE_JSON" > tmp.json && mv tmp.json "$PACKAGE_JSON"
+
+# set clean script to include everything
+jq '.scripts.clean = "rimraf dist *.tsbuildinfo coverage"' "$PACKAGE_JSON" > tmp.json && mv tmp.json "$PACKAGE_JSON"
+
+# updates @asmartbear package dependencies to be monorepo
+jq '(.dependencies // {} | with_entries(if .key | startswith("@asmartbear/") then .value = "*" else . end)) as $deps |
+    (.devDependencies // {} | with_entries(if .key | startswith("@asmartbear/") then .value = "*" else . end)) as $devDeps |
+    .dependencies = $deps | .devDependencies = $devDeps' "$PACKAGE_JSON" > tmp.json && mv tmp.json "$PACKAGE_JSON"
+
 # update JEST configuration for composite typescript
 jq '.jest.transform["^.+\\.tsx?$"] = ["ts-jest", {"tsconfig": {"composite": false}}] | .jest.moduleNameMapper = {"^@asmartbear/(.*)$": "<rootDir>/../$1/src"}' "$PACKAGE_JSON" > tmp.json && mv tmp.json "$PACKAGE_JSON"
 
-# update tsconfig.json for composites
-jq '.compilerOptions.composite = true' "$TSCONFIG_JSON" > tmp.json && mv tmp.json "$TSCONFIG_JSON"
+# update tsconfig.json for composites and to put the dist files in a sensible spot
+jq '.compilerOptions.composite = true | .compilerOptions.rootDir = "./src"' "$TSCONFIG_JSON" > tmp.json && mv tmp.json "$TSCONFIG_JSON"
 
 # install and update packages
 (
-    cd "$DST" &&
-    npm i -D rimraf@latest &&
-    npm run test
+    npm install --workspace="packages/$NAME" &&
+    npm install -D --workspace="packages/$NAME" rimraf@latest &&
+    npm run test --workspace="packages/$NAME" 
 )

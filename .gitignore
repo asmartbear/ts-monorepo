@@ -5,6 +5,7 @@ node_modules/
 packages/**/build/
 packages/**/cache/
 packages/**/coverage/
+packages/**/dist/
 
 # Environment files
 .env*
@@ -12,6 +13,7 @@ packages/**/coverage/
 
 # Logs
 *.log
+.turbo
 
 # OS generated files
 .DS_Store

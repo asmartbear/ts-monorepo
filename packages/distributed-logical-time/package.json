@@ -12,7 +12,7 @@
     "watch": "npm test -- --watchAll --coverage",
     "coverage": "npm test -- --coverage",
     "postcoverage": "open-cli coverage/lcov-report/index.html",
-    "clean": "rimraf dist",
+    "clean": "rimraf dist *.tsbuildinfo coverage",
     "prebuild": "npm run clean",
     "build": "tsc",
     "main": "tsc && node dist/index.js",
@@ -42,11 +42,11 @@
     "name": "Jason Cohen",
     "url": "https://github.com/asmartbear"
   },
-  "main": "dist/index.min.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
-  "types": "dist",
   "jest": {
     "testEnvironment": "node",
     "moduleFileExtensions": [

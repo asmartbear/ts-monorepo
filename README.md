@@ -19,5 +19,5 @@ npx changeset add
 npm run version
 git add .
 git commit -m "Version packages"
-npm run publish]
+npm run publish
 ```

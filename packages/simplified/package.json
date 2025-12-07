@@ -1,0 +1,60 @@
+{
+  "name": "@asmartbear/simplified",
+  "version": "1.0.9",
+  "description": "Simplifying and then processing data",
+  "keywords": [
+    "json"
+  ],
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "test": "jest --runInBand",
+    "watch": "npm test -- --watchAll --coverage",
+    "coverage": "npm test -- --coverage",
+    "clean": "rimraf dist",
+    "prebuild": "npm run clean",
+    "build": "tsc",
+    "main": "tsc && node dist/index.js",
+    "prerelease": "npm test && npm run build",
+    "prepare": "npm test && npm run build"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.10.0",
+    "benchmark": "^2.1.4",
+    "jest": "^30.2.0",
+    "rimraf": "^6.1.0",
+    "ts-jest": "^29.4.5",
+    "ts-loader": "^9.5.4",
+    "typescript": "^5.9.3"
+  },
+  "license": "MIT",
+  "repository": {
+    "url": "git@github.com:asmartbear/ts-monorepo.git",
+    "type": "git"
+  },
+  "bugs": {
+    "url": "https://github.com/asmartbear/ts-monorepo/issues"
+  },
+  "author": {
+    "name": "Jason Cohen",
+    "url": "https://github.com/asmartbear"
+  },
+  "main": "dist/index.min.js",
+  "files": [
+    "dist"
+  ],
+  "types": "dist",
+  "jest": {
+    "testEnvironment": "node",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "transform": {
+      "\\.(ts|tsx)$": "ts-jest"
+    },
+    "testRegex": "test/.*\\.(ts|tsx|js)$"
+  }
+}

@@ -10,7 +10,7 @@
         "build": "turbo run build",
         "test": "turbo run test",
         "changeset": "changeset",
-        "version": "changeset version",
+        "version": "turbo run test && turbo run build && changeset version",
         "release": "changeset release",
         "publish": "changeset publish && git push --follow-tags"
     },

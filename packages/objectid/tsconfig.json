@@ -1,13 +1,11 @@
 {
   "compilerOptions": {
-    "baseUrl": "./src",
     "outDir": "./dist",
     "sourceMap": true,
     "declaration": true,
     "strict": true,
     "noImplicitAny": true,
     "pretty": false,
-    "moduleResolution": "node",
     "lib": [
       "esnext"
     ],

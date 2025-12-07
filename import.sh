@@ -43,7 +43,7 @@ jq '.devDependencies."@types/jest" = "^30.0.0" | .devDependencies."@types/mocha"
 jq '.main = "dist/index.js" | .types = "dist/index.d.ts"' "$PACKAGE_JSON" > tmp.json && mv tmp.json "$PACKAGE_JSON"
 
 # set clean script to include everything
-jq '.scripts.clean = "rimraf dist *.tsbuildinfo coverage"' "$PACKAGE_JSON" > tmp.json && mv tmp.json "$PACKAGE_JSON"
+jq '.scripts.clean = "rimraf dist *.tsbuildinfo .tsbuildinfo coverage"' "$PACKAGE_JSON" > tmp.json && mv tmp.json "$PACKAGE_JSON"
 
 # updates @asmartbear package dependencies to be monorepo
 jq '(.dependencies // {} | with_entries(if .key | startswith("@asmartbear/") then .value = "*" else . end)) as $deps |

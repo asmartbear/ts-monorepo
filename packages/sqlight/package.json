@@ -11,7 +11,7 @@
     "watch": "tsc && npm test -- --watchAll",
     "watch-cov": "tsc && npm test -- --watchAll --coverage",
     "coverage": "npm test -- --coverage",
-    "clean": "rimraf dist *.tsbuildinfo coverage",
+    "clean": "rimraf dist *.tsbuildinfo .tsbuildinfo coverage",
     "prebuild": "npm run clean",
     "build": "tsc",
     "go": "tsx src/go.ts",

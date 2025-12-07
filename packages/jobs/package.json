@@ -1,10 +1,10 @@
 {
-  "name": "@asmartbear/status",
-  "version": "1.0.17",
-  "description": "Display multi-job status on the command-line",
+  "name": "@asmartbear/jobs",
+  "version": "1.0.30",
+  "description": "Simple job-runner with priorities, dependencies, and tag-groups",
   "keywords": [
-    "status",
-    "cli"
+    "jobs",
+    "queue"
   ],
   "scripts": {
     "type-check": "tsc --noEmit",
@@ -68,5 +68,8 @@
       "^@asmartbear/(.*)$": "<rootDir>/../$1/src"
     }
   },
-  "dependencies": {}
+  "dependencies": {
+    "@asmartbear/status": "*",
+    "async-mutex": "0.5.0"
+  }
 }

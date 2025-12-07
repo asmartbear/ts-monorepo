@@ -1,5 +1,8 @@
-import { Simplifiable, simplifiedToDisplay, simplifyOpaqueType } from '@asmartbear/simplified'
+import { Simple, Simplifiable, simplifiedCompare, simplifiedToDisplay, simplifyOpaqueType } from '@asmartbear/simplified'
 import { Console } from 'console';
+
+/** A native type where comparison operators make sense */
+type ComparableNative = boolean | number | string | bigint
 
 /**
  * Given a type, returns the Class of that type.
@@ -26,6 +29,30 @@ export function eq<T, E extends T>(actual: T, expected: E, message?: string): as
 export function ne<T, E extends T>(actual: T, expected: E, message?: string): void {
     try {
         expect(actual).not.toEqual(expected)
+    } catch (e: any) { if (message) { e.message = `${e.message}\n\n${message}` } throw e }
+}
+
+export function lt<T extends ComparableNative>(actual: T, expected: T, message?: string): void {
+    try {
+        expect(actual < expected).toBe(true)
+    } catch (e: any) { if (message) { e.message = `${e.message}\n\n${message}` } throw e }
+}
+
+export function le<T extends ComparableNative>(actual: T, expected: T, message?: string): void {
+    try {
+        expect(actual <= expected).toBe(true)
+    } catch (e: any) { if (message) { e.message = `${e.message}\n\n${message}` } throw e }
+}
+
+export function gt<T extends ComparableNative>(actual: T, expected: T, message?: string): void {
+    try {
+        expect(actual > expected).toBe(true)
+    } catch (e: any) { if (message) { e.message = `${e.message}\n\n${message}` } throw e }
+}
+
+export function ge<T extends ComparableNative>(actual: T, expected: T, message?: string): void {
+    try {
+        expect(actual >= expected).toBe(true)
     } catch (e: any) { if (message) { e.message = `${e.message}\n\n${message}` } throw e }
 }
 

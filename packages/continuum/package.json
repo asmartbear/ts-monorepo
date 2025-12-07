@@ -1,48 +1,33 @@
 {
-  "name": "@asmartbear/testutil",
-  "version": "1.0.10",
-  "description": "Unit test utilities for Typescript",
+  "name": "@asmartbear/continuum",
+  "version": "1.7.0",
+  "description": "Generates strings that sort between other strings",
   "keywords": [
-    "testing",
-    "test",
-    "unit-test",
-    "test-framework"
+    "diff"
   ],
   "scripts": {
     "type-check": "tsc --noEmit",
-    "test": "jest --runInBand",
-    "watch": "npm test -- --watchAll",
-    "watch-cov": "npm test -- --watchAll --coverage",
+    "test": "jest --maxWorkers=4",
+    "watch": "npm test -- --watch --coverage",
     "coverage": "npm test -- --coverage",
-    "clean": "rimraf dist *.tsbuildinfo coverage",
+    "clean": "rimraf dist *.tsbuildinfo .tsbuildinfo coverage",
     "prebuild": "npm run clean",
     "build": "tsc",
-    "main": "tsc && node dist/index.js",
-    "prerelease": "npm test && npm run build"
+    "prerelease": "npm run lint && npm test && npm run build"
   },
+  "dependencies": {},
   "devDependencies": {
+    "@asmartbear/testutil": "*",
     "@types/jest": "^30.0.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "^24.10.1",
-    "benchmark": "^2.1.4",
+    "benchmark": "2.1.4",
     "jest": "^30.2.0",
     "rimraf": "^6.1.2",
     "ts-jest": "^29.4.5",
     "ts-loader": "^9.5.4",
     "typescript": "^5.9.3"
   },
-  "dependencies": {
-    "@asmartbear/simplified": "*"
-  },
-  "peerDependencies": {
-    "jest": ">=29.0.0"
-  },
-  "peerDependenciesMeta": {
-    "jest": {
-      "optional": false
-    }
-  },
-  "sideEffects": false,
   "license": "MIT",
   "repository": {
     "url": "git@github.com:asmartbear/ts-monorepo.git",
@@ -56,20 +41,19 @@
     "url": "https://github.com/asmartbear"
   },
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist/src"
   ],
+  "types": "dist/index.d.ts",
   "jest": {
-    "preset": "ts-jest",
     "testEnvironment": "node",
-    "cache": true,
     "moduleFileExtensions": [
       "ts",
       "tsx",
       "js"
     ],
     "transform": {
+      "\\.(ts|tsx)$": "ts-jest",
       "^.+\\.tsx?$": [
         "ts-jest",
         {
@@ -79,18 +63,26 @@
         }
       ]
     },
-    "testRegex": "test/.+\\.test\\.(ts|tsx|js)$",
-    "testPathIgnorePatterns": [
-      "/node_modules/",
-      "/dist/"
-    ],
-    "coveragePathIgnorePatterns": [
-      "/node_modules/",
-      "/dist/",
-      "/test/"
-    ],
+    "testRegex": "test/.*\\.(ts|tsx|js)$",
     "moduleNameMapper": {
       "^@asmartbear/(.*)$": "<rootDir>/../$1/src"
     }
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "node": 6
+          }
+        }
+      ],
+      "@babel/preset-flow",
+      "@babel/preset-typescript"
+    ],
+    "plugins": [
+      "@babel/plugin-proposal-class-properties"
+    ]
   }
 }

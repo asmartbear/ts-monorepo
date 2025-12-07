@@ -58,4 +58,5 @@ jq '.compilerOptions.composite = true | .compilerOptions.rootDir = "./src"' "$TS
     npm install --workspace="packages/$NAME" &&
     npm install -D --workspace="packages/$NAME" rimraf@latest &&
     npm run test --workspace="packages/$NAME" 
+    npm run build --workspace="packages/$NAME" 
 )

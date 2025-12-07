@@ -36,6 +36,9 @@ jq 'del(.scripts.release, .scripts.postpublish, .scripts.prepare, .scripts.postb
 # remove dependencies we don't want
 jq 'del(.devDependencies."standard-version", .devDependencies."open-cli", .devDependencies."uglify-js", .devDependencies."tslint")' "$PACKAGE_JSON" > tmp.json && mv tmp.json "$PACKAGE_JSON"
 
+# set dev dependencies we do want
+jq '.devDependencies."@types/jest" = "^30.0.0" | .devDependencies."@types/mocha" = "^10.0.10" | .devDependencies."@types/node" = "^24.10.1" | .devDependencies."jest" = "^30.2.0" | .devDependencies."rimraf" = "^6.1.2" | .devDependencies."ts-jest" = "^29.4.5" | .devDependencies."ts-loader" = "^9.5.4" | .devDependencies."typescript" = "^5.9.3"' "$PACKAGE_JSON" > tmp.json && mv tmp.json "$PACKAGE_JSON"
+
 # set output files and types
 jq '.main = "dist/index.js" | .types = "dist/index.d.ts"' "$PACKAGE_JSON" > tmp.json && mv tmp.json "$PACKAGE_JSON"
 
@@ -56,7 +59,6 @@ jq '.compilerOptions.composite = true | .compilerOptions.rootDir = "./src"' "$TS
 # install and update packages
 (
     npm install --workspace="packages/$NAME" &&
-    npm install -D --workspace="packages/$NAME" rimraf@latest &&
-    npm run test --workspace="packages/$NAME" 
-    npm run build --workspace="packages/$NAME" 
+    npm run build --workspace="packages/$NAME" &&
+    npm run test --workspace="packages/$NAME"
 )

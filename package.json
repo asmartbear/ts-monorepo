@@ -1,0 +1,10 @@
+{
+    "name": "ts-monorepo",
+    "private": false,
+    "workspaces": [
+        "packages/*"
+    ],
+    "devDependencies": {
+        "turbo": "latest"
+    }
+}

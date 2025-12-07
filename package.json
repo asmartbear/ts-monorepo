@@ -7,7 +7,8 @@
     "scripts": {
         "changeset": "changeset",
         "version": "changeset version",
-        "release": "changeset release"
+        "release": "changeset release",
+        "publish": "changeset publish && git push --follow-tags"
     },
     "devDependencies": {
         "@changesets/cli": "^2.27.1"

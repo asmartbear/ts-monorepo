@@ -12,6 +12,7 @@
     ],
     "module": "commonjs",
     "target": "es2015",
+    "esModuleInterop": true,
     "types": [
       "jest",
       "node"

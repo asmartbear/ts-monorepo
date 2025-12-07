@@ -19,6 +19,7 @@ echo $NAME
 
 DST="packages/$NAME/"
 PACKAGE_JSON="${DST}package.json"
+TSCONFIG_JSON="${DST}tsconfig.json"
 
 # copy all the files except some
 rsync -av --exclude='.git' --exclude='node_modules' --exclude='.vscode' --exclude='.tsbuildinfo' \
@@ -30,10 +31,16 @@ sed -i '' -e 's/git@github.com:asmartbear\/.*\.git/git@github.com:asmartbear\/ts
 sed -i '' -e 's/github\.com\/asmartbear\/.*\/issues/github.com\/asmartbear\/ts-monorepo\/issues/' "$PACKAGE_JSON"
 
 # remove scripts we don't like
-jq 'del(.scripts.release, .scripts.postpublish, .scripts.postbuild, .scripts.minify, .scripts.lint, .scripts."postcoverage")' "$PACKAGE_JSON" > tmp.json && mv tmp.json "$PACKAGE_JSON"
+jq 'del(.scripts.release, .scripts.postpublish, .scripts.prepare, .scripts.postbuild, .scripts.minify, .scripts.lint, .scripts."postcoverage")' "$PACKAGE_JSON" > tmp.json && mv tmp.json "$PACKAGE_JSON"
 
 # remove dependencies we don't want
 jq 'del(.devDependencies."standard-version", .devDependencies."open-cli", .devDependencies."uglify-js", .devDependencies."tslint")' "$PACKAGE_JSON" > tmp.json && mv tmp.json "$PACKAGE_JSON"
+
+# update JEST configuration for composite typescript
+jq '.jest.transform["^.+\\.tsx?$"] = ["ts-jest", {"tsconfig": {"composite": false}}] | .jest.moduleNameMapper = {"^@asmartbear/(.*)$": "<rootDir>/../$1/src"}' "$PACKAGE_JSON" > tmp.json && mv tmp.json "$PACKAGE_JSON"
+
+# update tsconfig.json for composites
+jq '.compilerOptions.composite = true' "$TSCONFIG_JSON" > tmp.json && mv tmp.json "$TSCONFIG_JSON"
 
 # install and update packages
 (

@@ -1,0 +1,90 @@
+{
+  "name": "@asmartbear/beardb",
+  "version": "1.0.10",
+  "description": "Document-database using Bear as a backend",
+  "keywords": [
+    "sqlite"
+  ],
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "test": "jest --runInBand",
+    "watch": "npm test -- --watchAll",
+    "watch-cov": "npm test -- --watchAll --coverage",
+    "coverage": "npm test -- --coverage",
+    "clean": "rimraf dist *.tsbuildinfo .tsbuildinfo coverage",
+    "prebuild": "npm run clean",
+    "build": "tsc",
+    "go": "tsx src/go.ts",
+    "main": "tsc && node dist/index.js",
+    "prerelease": "npm test && npm run build"
+  },
+  "devDependencies": {
+    "@asmartbear/testutil": "*",
+    "@types/jest": "^30.0.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.10.1",
+    "benchmark": "^2.1.4",
+    "jest": "^30.2.0",
+    "rimraf": "^6.1.2",
+    "ts-jest": "^29.4.5",
+    "ts-loader": "^9.5.4",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@asmartbear/filesystem": "*",
+    "@asmartbear/simplified": "*",
+    "@asmartbear/smarttype": "*",
+    "@asmartbear/sqlight": "*",
+    "tiny-invariant": "^1.3.3"
+  },
+  "license": "MIT",
+  "repository": {
+    "url": "git@github.com:asmartbear/ts-monorepo.git",
+    "type": "git"
+  },
+  "bugs": {
+    "url": "https://github.com/asmartbear/ts-monorepo/issues"
+  },
+  "author": {
+    "name": "Jason Cohen",
+    "url": "https://github.com/asmartbear"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "types": "dist/index.d.ts",
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "cache": true,
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "transform": {
+      "^.+\\.tsx?$": [
+        "ts-jest",
+        {
+          "tsconfig": {
+            "composite": false
+          }
+        }
+      ]
+    },
+    "testRegex": "test/.+\\.test\\.(ts|tsx|js)$",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/",
+      "/test/"
+    ],
+    "moduleNameMapper": {
+      "^@asmartbear/(.*)$": "<rootDir>/../$1/src"
+    }
+  }
+}

@@ -52,6 +52,7 @@ export function isInstance<T, C extends ClassOf<T>>(actual: T | null | undefined
 export function len<T extends { length: number } | { size: number }>(actual: T | null | undefined, expected: number, message?: string): asserts actual is T {
     try {
         if (!actual) throw new Error("was " + actual)
+        else if (typeof actual === "string") expect(actual.length).toEqual(expected)
         else if ('length' in actual) expect(actual.length).toEqual(expected)
         else if ('size' in actual) expect(actual.size).toEqual(expected)
         else throw new Error("shouldn't get here")

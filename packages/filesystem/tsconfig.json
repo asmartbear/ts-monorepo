@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src",
     "sourceMap": true,
     "declaration": true,
     "strict": true,
@@ -17,7 +16,8 @@
       "jest",
       "node"
     ],
-    "composite": true
+    "composite": true,
+    "rootDir": "./src"
   },
   "include": [
     "./src/**/*.ts"

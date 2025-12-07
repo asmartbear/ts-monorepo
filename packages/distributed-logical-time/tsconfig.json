@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "sourceMap": true,
+    "declaration": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "pretty": false,
+    "lib": [
+      "es2018",
+      "dom"
+    ],
+    "module": "commonjs",
+    "target": "es5",
+    "types": [
+      "jest",
+      "node"
+    ]
+  },
+  "include": [
+    "./src/**/*.ts",
+  ]
+}

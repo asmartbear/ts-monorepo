@@ -60,7 +60,7 @@ export default class LogicalTime {
    * Returns a new timestamp that is guaranteed to be greater than any previous timestamp,
    * and never strays too far from system time, while also executing extremely quickly.
    */
-  get now(): number {
+  now(): number {
 
     // If we're in the backoff period, just increment the counter and don't ask for system time.
     if (this.inSystemTimeBackoffPeriod) {

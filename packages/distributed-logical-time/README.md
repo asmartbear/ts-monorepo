@@ -14,14 +14,14 @@ Features:
 
 ```typescript
 const lt = new LogicalTime()
-console.log(lt.now)     // 3120866120
-console.log(lt.now)     // 3120866121
-console.log(lt.now)     // 3120866122
+console.log(lt.now())     // 3120866120
+console.log(lt.now())     // 3120866121
+console.log(lt.now())     // 3120866122
 lt.useSystemTimeNext()  // will refresh system time on the next timestamp,
-                        // even if in a back-off period.
-lt.update(t)            // ensure we are later than `t` including an
-                        // additional random interval, used to synchronize
-                        // but hopefully not duplicate another machine.
+                        // even if currently inside the back-off period.
+lt.update(t)            // ensure we are later than `t`, including an
+                        // additional random interval. To synchronize
+                        // but hopefully not duplicate another replica.
 ```
 
 ## Development Usage

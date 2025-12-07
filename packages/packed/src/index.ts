@@ -477,7 +477,9 @@ export class PackedBuffer {
     } else if (isObjectSerializable(x)) {
       this.buf[this.idx++] = TYPE_REGISTERED;
       this.writeRegisteredSerializable(x);
-    } else if (typeof x === "object") {
+    } else {
+      // istanbul ignore next
+      if (typeof x !== "object") throw new Error("Shouldn't get here")
       this.buf[this.idx++] = TYPE_STROBJECT;
       this.writeArray(Object.entries(x), (buf, el) => buf.writeToken(el[0]).writeSerializable(el[1]));
     }

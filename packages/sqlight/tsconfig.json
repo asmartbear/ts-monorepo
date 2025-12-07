@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "sourceMap": true,
+    "declaration": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "incremental": true,
+    "tsBuildInfoFile": ".tsbuildinfo",
+    "pretty": false,
+    "lib": [
+      "esnext"
+    ],
+    "module": "commonjs",
+    "target": "es2015",
+    "esModuleInterop": true,
+    "types": [
+      "jest",
+      "node"
+    ],
+    "composite": true,
+    "rootDir": "./src"
+  },
+  "include": [
+    "./src/**/*.ts"
+  ]
+}

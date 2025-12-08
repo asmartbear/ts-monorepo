@@ -64,10 +64,10 @@ test("small positive integers", () => {
   expect(() => tst(Number.MAX_SAFE_INTEGER)).toThrow();
 });
 
-test("fixed unsigned 31-bit integers", () => {
+test("fixed unsigned 32-bit integers", () => {
   const buf = new PackedBuffer();
-  const writer = buf.writeUInt31.bind(buf);
-  const reader = buf.readUInt31.bind(buf);
+  const writer = buf.writeUInt32.bind(buf);
+  const reader = buf.readUInt32.bind(buf);
   const tst = (x: number) => {
     buf.rewind();
     writer(x);
@@ -78,17 +78,21 @@ test("fixed unsigned 31-bit integers", () => {
     }
   }
 
-  for (const k of getFibonaccis(Math.pow(2, 31))) {
+  for (const k of getFibonaccis(Math.pow(2, 32))) {
     tst(k);
     tst(k + 1);
     tst(k + 2);
     tst(k + 3);
     tst(k + 4);
   }
-  tst(2147483647);
-  expect(() => tst(2147483648)).toThrow();
-  expect(() => tst(3000000000)).toThrow();
+  tst(0);
+  tst(4294967296 - 2);
+  tst(4294967296 - 1);
+  expect(() => tst(4294967296)).toThrow();
+  expect(() => tst(4294967296 + 100)).toThrow();
   expect(() => tst(Number.MAX_SAFE_INTEGER)).toThrow();
+  expect(() => tst(-1)).toThrow();
+  expect(() => tst(Number.MIN_SAFE_INTEGER)).toThrow();
 });
 
 test("fixed unsigned 24-bit integers", () => {
@@ -112,11 +116,47 @@ test("fixed unsigned 24-bit integers", () => {
     tst(k + 3);
     tst(k + 4);
   }
+  tst(0);
+  tst(16777214);
   tst(16777215);
   expect(() => tst(16777216)).toThrow();
   expect(() => tst(16777230)).toThrow();
   expect(() => tst(167772160)).toThrow();
   expect(() => tst(Number.MAX_SAFE_INTEGER)).toThrow();
+  expect(() => tst(-1)).toThrow();
+  expect(() => tst(Number.MIN_SAFE_INTEGER)).toThrow();
+});
+
+test("fixed unsigned 16-bit integers", () => {
+  const buf = new PackedBuffer();
+  const writer = buf.writeUInt16.bind(buf);
+  const reader = buf.readUInt16.bind(buf);
+  const tst = (x: number) => {
+    buf.rewind();
+    writer(x);
+    buf.rewind();
+    const result = reader();
+    if (result !== x) {       // looks dumb, but this makes the tests (no joke) 100x faster.
+      expect(result).toEqual(x);
+    }
+  }
+
+  for (const k of getFibonaccis(Math.pow(2, 16))) {
+    tst(k);
+    tst(k + 1);
+    tst(k + 2);
+    tst(k + 3);
+    tst(k + 4);
+  }
+  tst(0);
+  tst(65534);
+  tst(65535);
+  expect(() => tst(65536)).toThrow();
+  expect(() => tst(65537)).toThrow();
+  expect(() => tst(65536 + 1000)).toThrow();
+  expect(() => tst(Number.MAX_SAFE_INTEGER)).toThrow();
+  expect(() => tst(-1)).toThrow();
+  expect(() => tst(Number.MIN_SAFE_INTEGER)).toThrow();
 });
 
 test("integers", () => {
@@ -223,18 +263,28 @@ test("continuum strings", () => {
   const tst = (x: string) => {
     buf.rewind();
     writer(x);
+    expect(buf.idx).toBeLessThanOrEqual(Math.ceil(2 + x.length * 4 / 3))  // packing at 4/3 ratio plus length byte
     buf.rewind();
     const result = reader();
     expect(result).toEqual(x);
   }
 
   tst("");
+  tst("B");
   tst("A");
   tst("a");
+  tst("z");
   tst("az");
+  tst("aAz");
+  tst("AyzY");
+  tst("AyaYz");
   tst("zzzA");
   tst("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
   tst("ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKABCDEFGHIJKLMNOPQABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzRSTUVWXYZabcABCDEFGHIABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzJKLMNOPQRSTUABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzVWXYZabcdefghijklmnopqrstuvwxyzdefghijklmnopqrstuvwxyzLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz");
+  tst("ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKABCDEFGHIJKLMNOPQABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzRSTUVWXYZabcABCDEFGHIABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzJKLMNOPQRSTUABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzVWXYZabcdefghijklmnopqrstuvwxyzdefghijklmnopqrstuvwxyzLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzP");
+  tst("ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKABCDEFGHIJKLMNOPQABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzRSTUVWXYZabcABCDEFGHIABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzJKLMNOPQRSTUABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzVWXYZabcdefghijklmnopqrstuvwxyzdefghijklmnopqrstuvwxyzLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzPP");
+  tst("ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKABCDEFGHIJKLMNOPQABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzRSTUVWXYZabcABCDEFGHIABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzJKLMNOPQRSTUABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzVWXYZabcdefghijklmnopqrstuvwxyzdefghijklmnopqrstuvwxyzLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzPPP");
+  tst("ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKABCDEFGHIJKLMNOPQABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzRSTUVWXYZabcABCDEFGHIABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzJKLMNOPQRSTUABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzVWXYZabcdefghijklmnopqrstuvwxyzdefghijklmnopqrstuvwxyzLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzPPPP");
 });
 
 test("tokens", () => {

@@ -28,7 +28,9 @@
     "ts-loader": "^9.5.4",
     "typescript": "^5.9.3"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@asmartbear/continuum": "*"
+  },
   "license": "MIT",
   "repository": {
     "url": "git@github.com:asmartbear/ts-monorepo.git",

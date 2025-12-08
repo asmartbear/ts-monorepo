@@ -8,7 +8,7 @@ const LAST_IDX = ALPHABET.length - 1;
  * Converts the char-code at the given location of a string, into an offset in our alphabet.
  * If it is given a character outside of the alphabet, it throws an exception.
  */
-function charToIdx(str: string, offset: number): number {
+export function alphabetCharToIdx(str: string, offset: number): number {
     const x = str.charCodeAt(offset);
     if (x >= 65 && x <= 90) return x - 65;     // A-Z
     if (x >= 97 && x <= 122) return x - 71;     // a-z
@@ -47,8 +47,8 @@ export function between(s1: string, s2: string): string {
 
     // Unless we ran out of string completely, we can compute a new segment now
     if (k < N) {
-        const a = charToIdx(lo, k);
-        const b = charToIdx(hi, k);
+        const a = alphabetCharToIdx(lo, k);
+        const b = alphabetCharToIdx(hi, k);
 
         // Pick the mid-point between the two values that we have to split
         const m = floor((a + b) / 2);
@@ -61,7 +61,7 @@ export function between(s1: string, s2: string): string {
         if (m <= a) {
             ++k;        // definitely need this character to be strictly less than high.
             while (k < N) {       // scan for the next one that we can slip in front of
-                const c = charToIdx(lo, k);
+                const c = alphabetCharToIdx(lo, k);
                 if (c < LAST_IDX - 1) {     // need that extra 1, because we average against it and still need to be greater than it
                     return lo.substring(0, k) + ALPHABET[floor((c + LAST_IDX) / 2)];
                 }
@@ -77,7 +77,7 @@ export function between(s1: string, s2: string): string {
     // We can pick the "mid-point" between the lowest character in the alphabet and what `hi` has.
     const M = hi.length;
     for (; k < M; ++k) {
-        const b = charToIdx(hi, k);
+        const b = alphabetCharToIdx(hi, k);
         const m = floor(b / 2);
         if (m >= b || m <= 0) {        // this isn't going to be enough!
             lo += ALPHABET[0];      // try to make an end-run using the lowest character, but keep going because we can't end with the last letter of the alphabet
@@ -137,7 +137,7 @@ function _cstring_to_faux_bigint(s: string): number[] {
     const n = s.length;
     const d = new Array<number>(n);
     for (let k = 0; k < n; ++k) {
-        d[k] = charToIdx(s, n - k - 1) - IDX_DIGIT_0;
+        d[k] = alphabetCharToIdx(s, n - k - 1) - IDX_DIGIT_0;
     }
     // console.log(`_cstring_to_faux_bigint(${s}) -> ${d}`);
     return d;
@@ -237,7 +237,7 @@ export function toInteger(s: string): number {
     if (s === "a") return 0;      // special case
 
     let k = 0;                  // position in the string
-    let exponent = charToIdx(s, k++) - IDX_EXPONENT_0;       // pick off current value of the exponent, translating to a numeric value
+    let exponent = alphabetCharToIdx(s, k++) - IDX_EXPONENT_0;       // pick off current value of the exponent, translating to a numeric value
 
     const isNegative = exponent < 0;
     if (isNegative) {
@@ -246,7 +246,7 @@ export function toInteger(s: string): number {
 
     let x = 0;
     while (exponent >= 0) {
-        const digit = charToIdx(s, k++) - IDX_DIGIT_0;      // convert from our BASE 50 to a number
+        const digit = alphabetCharToIdx(s, k++) - IDX_DIGIT_0;      // convert from our BASE 50 to a number
         x = (x * BASE) + (isNegative ? BASE - 1 - digit : digit);     // accumulate this digit, handling "twos-complement"
         --exponent;
     }

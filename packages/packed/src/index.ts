@@ -1,3 +1,5 @@
+import { alphabetCharToIdx, ALPHABET } from '@asmartbear/continuum'
+
 /**
  * Any JSON type, including arrays and structures.
  */
@@ -194,9 +196,9 @@ export class PackedBuffer {
     return x | (next << shift);
   }
 
-  writeUInt31(x: number): this {
+  writeUInt32(x: number): this {
     this.ensureMoreSpace(4);
-    if (x > 2147483647) throw new Error(`small positive integers must be smaller than 2147483647 = 2^31-1, but was given ${x}`);
+    if (x < 0 || x > 4294967295) throw new Error(`UInt32 must be in [0,4294967295], but was given ${x}`);
     const idx = this.idx;
     const buf = this.buf;
     buf[idx] = (x >> 24) & 0xff;
@@ -207,15 +209,15 @@ export class PackedBuffer {
     return this
   }
 
-  readUInt31(): number {
+  readUInt32(): number {
     const idx = this.idx += 4;
     const buf = this.buf;
-    return (((((buf[idx - 4] << 8) | buf[idx - 3]) << 8) | buf[idx - 2]) << 8) | buf[idx - 1];
+    return (((((buf[idx - 4] * 256) + buf[idx - 3]) * 256) + buf[idx - 2]) * 256) + buf[idx - 1];
   }
 
   writeUInt24(x: number): this {
     this.ensureMoreSpace(4);
-    if (x > 16777215) throw new Error(`small positive integers must be smaller than 16777215 = 2^24-1, but was given ${x}`);
+    if (x < 0 || x > 16777215) throw new Error(`UInt24 must be in [0,16777215], but was given ${x}`);
     const idx = this.idx;
     const buf = this.buf;
     buf[idx] = (x >> 16) & 0xff;
@@ -229,6 +231,23 @@ export class PackedBuffer {
     const idx = this.idx += 3;
     const buf = this.buf;
     return ((((buf[idx - 3]) << 8) | buf[idx - 2]) << 8) | buf[idx - 1];
+  }
+
+  writeUInt16(x: number): this {
+    this.ensureMoreSpace(4);
+    if (x < 0 || x > 65535) throw new Error(`UInt16 must be in [0,65535], but was given ${x}`);
+    const idx = this.idx;
+    const buf = this.buf;
+    buf[idx] = (x >> 8) & 0xff;
+    buf[idx + 1] = (x) & 0xff;
+    this.idx += 2;
+    return this
+  }
+
+  readUInt16(): number {
+    const idx = this.idx += 2;
+    const buf = this.buf;
+    return ((buf[idx - 2]) * 256) + buf[idx - 1];
   }
 
   writeInteger(x: number): this {
@@ -343,12 +362,45 @@ export class PackedBuffer {
 
   /** Writes a `@asmartbear/continuum` string more efficiently than writing a generic string, since there's just a 26-char alphabet. */
   writeContinuumString(s: string): this {
-    return this.writeString(s)
+    // We can fit 4 characters into 3 bytes; a pretty good ratio.
+    this.ensureMoreSpace(1 + s.length / 3);
+    this.writeSmallNonNegativeInteger(s.length)   // write length first
+    for (let start = 0; start < s.length; start += 4) {    // three at a time, like codons
+      let num = 0   // accumulate the number
+      for (let i = Math.min(s.length, start + 4); --i >= start;) {
+        num = (num * 52) + alphabetCharToIdx(s, i)
+      }
+      this.writeUInt24(num)
+    }
+    return this
   }
 
   /** Reads a `@asmartbear/continuum` string that was written with `writeContinuumString()` */
   readContinuumString(): string {
-    return this.readString()
+    const len = this.readSmallNonNegativeInteger()    // string length
+    let s = ""
+    for (let i = 0; i < len;) {
+      let num = this.readUInt24()
+      let j = num % 52
+      s += ALPHABET[j]
+      num = (num - j) / 52
+      if (++i < len) {
+        j = num % 52
+        s += ALPHABET[j]
+        num = (num - j) / 52
+        if (++i < len) {
+          j = num % 52
+          s += ALPHABET[j]
+          num = (num - j) / 52
+          if (++i < len) {
+            j = num % 52
+            s += ALPHABET[j]
+            ++i
+          }
+        }
+      }
+    }
+    return s
   }
 
   /**

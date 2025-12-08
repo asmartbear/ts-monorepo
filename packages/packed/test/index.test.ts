@@ -216,6 +216,27 @@ test("strings", () => {
   tst("\ud83c\udf09");
 });
 
+test("continuum strings", () => {
+  const buf = new PackedBuffer();
+  const writer = buf.writeContinuumString.bind(buf);
+  const reader = buf.readContinuumString.bind(buf);
+  const tst = (x: string) => {
+    buf.rewind();
+    writer(x);
+    buf.rewind();
+    const result = reader();
+    expect(result).toEqual(x);
+  }
+
+  tst("");
+  tst("A");
+  tst("a");
+  tst("az");
+  tst("zzzA");
+  tst("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+  tst("ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKABCDEFGHIJKLMNOPQABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzRSTUVWXYZabcABCDEFGHIABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzJKLMNOPQRSTUABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzVWXYZabcdefghijklmnopqrstuvwxyzdefghijklmnopqrstuvwxyzLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz");
+});
+
 test("tokens", () => {
   const buf = new PackedBuffer();
   buf.writeToken("foo");

@@ -341,6 +341,16 @@ export class PackedBuffer {
     return s;
   }
 
+  /** Writes a `@asmartbear/continuum` string more efficiently than writing a generic string, since there's just a 26-char alphabet. */
+  writeContinuumString(s: string): this {
+    return this.writeString(s)
+  }
+
+  /** Reads a `@asmartbear/continuum` string that was written with `writeContinuumString()` */
+  readContinuumString(): string {
+    return this.readString()
+  }
+
   /**
    * Writes arbitrary JSON-compatible data.
    */

@@ -1,6 +1,6 @@
 {
   "name": "@asmartbear/continuum",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "Generates strings that sort between other strings",
   "keywords": [
     "diff"

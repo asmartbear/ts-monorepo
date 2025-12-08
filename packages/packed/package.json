@@ -1,6 +1,6 @@
 {
   "name": "@asmartbear/packed",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Serialize to a package byte-buffer",
   "keywords": [
     "serialize",

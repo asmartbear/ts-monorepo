@@ -454,3 +454,29 @@ export function simplifiedToHash(x: Simple): string {
     // For now, just convert to JSON and hash
     return createHash('md5').update(s).digest('hex');
 }
+
+/**
+ * Converts a simplified value to a string-typed 'key' suitable for maps or sets.
+ * Similar to `simplifiedToHash()` but much faster for simple types, as things like
+ * `boolean` and `number` can be converted directly to a string, and short strings can
+ * be used as-is.  Long strings are hashed so keys don't get too long, trivial structured
+ * content can be a string (e.g. `[]`), but generally is fully hashed.
+ */
+export function simplifiedToKey(x: Simple | symbol | bigint): string {
+    switch (typeof x) {
+        // Many primative types can be just converted to a string
+        case 'boolean':
+        case 'number':
+        case 'bigint':
+        case 'symbol':
+            return String(x)
+        // Short strings are as-is; long ones still need to be hashed.
+        case 'string': return x.length <= 32 ? x : simplifiedToHash(x)
+        // Undefined is its own thing
+        case 'undefined': return "__undefined__"
+        // Objects are hashed, except for a few special cases
+        case 'object':
+            if (x === null) return "__null__"
+            return simplifiedToHash(x)
+    }
+}

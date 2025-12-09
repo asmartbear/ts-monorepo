@@ -1,5 +1,5 @@
 import { isPromise } from 'util/types';
-import { getClassOf, isClassObject, isIterable, isPlainObject, isSimple, Simple, simplifiedAwait, simplifiedCompare, simplifiedJoin, simplifiedToDisplay, simplifiedToHash, simplifiedToJSON, SimplifiedWalker, simplify, simplifyOpaqueType } from '../src/index';
+import { getClassOf, isClassObject, isIterable, isPlainObject, isSimple, Simple, simplifiedAwait, simplifiedCompare, simplifiedJoin, simplifiedToDisplay, simplifiedToHash, simplifiedToJSON, simplifiedToKey, SimplifiedWalker, simplify, simplifyOpaqueType } from '../src/index';
 
 class MyTestClass {
     public a: number = 123
@@ -401,6 +401,39 @@ test('simplified hashed', () => {
     expect(simplifiedToHash("")).toEqual('d41d8cd98f00b204e9800998ecf8427e')
     expect(simplifiedToHash(null)).toEqual('37a6259cc0c1dae299a7866489dff0bd')
     expect(simplifiedToHash(undefined)).toEqual('37a6259cc0c1dae299a7866489dff0bd')     // XXXX: bad that there's no difference with null!
+})
+
+test('simplified to key', () => {
+    const f = simplifiedToKey
+    expect(f(undefined)).toEqual('__undefined__')
+    expect(f(null)).toEqual('__null__')
+    expect(f(false)).toEqual('false')
+    expect(f(true)).toEqual('true')
+    expect(f(0)).toEqual('0')
+    expect(f(BigInt(0))).toEqual('0')
+    expect(f(-1)).toEqual('-1')
+    expect(f(1)).toEqual('1')
+    expect(f(12345678)).toEqual('12345678')
+    expect(f(BigInt(12345678))).toEqual('12345678')
+    expect(f(12345678.34)).toEqual('12345678.34')
+    expect(f(Number.MAX_SAFE_INTEGER)).toEqual('9007199254740991')
+    expect(f(Number.POSITIVE_INFINITY)).toEqual('Infinity')
+    expect(f(Number.NEGATIVE_INFINITY)).toEqual('-Infinity')
+    expect(f(Number.EPSILON)).toEqual('2.220446049250313e-16')
+    expect(f(Number.NaN)).toEqual('NaN')
+    expect(f("")).toEqual('')
+    expect(f("x")).toEqual('x')
+    expect(f(Symbol.for("x"))).toEqual('Symbol(x)')
+    expect(f("foo bar baz")).toEqual('foo bar baz')
+    expect(f("foo bar baz foo bar baz foo bar ")).toEqual('foo bar baz foo bar baz foo bar ')
+    expect(f("foo bar baz foo bar baz foo bar baz foo bar baz foo bar baz")).toEqual('6e4f570be5b255f6ebee7b28d9f92a1f')
+    expect(f([])).toEqual('d751713988987e9331980363e24189ce')
+    expect(f([1])).toEqual('35dba5d75538a9bbe0b4da4422759a0e')
+    expect(f([1] as const)).toEqual('35dba5d75538a9bbe0b4da4422759a0e')
+    expect(f([1, 2, 3])).toEqual('f1e46f328e6decd56c64dd5e761dc2b7')
+    expect(f([1, 2, 3] as const)).toEqual('f1e46f328e6decd56c64dd5e761dc2b7')
+    expect(f({})).toEqual('99914b932bd37a50b983c5e7c90ae93b')
+    expect(f({ a: 1 })).toEqual('bb6cb5c68df4652941caf652a366f2d8')
 })
 
 test("simplified comparison", () => {

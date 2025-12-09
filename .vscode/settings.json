@@ -13,6 +13,7 @@
         "**/.tsbuildinfo": true,
         "**/*.tsbuildinfo": true,
         "**/.turbo": true,
+        "**/coverage": true,
         "**/__pycache__": true,
     },
     "search.exclude": {

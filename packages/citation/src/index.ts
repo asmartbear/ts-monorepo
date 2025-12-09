@@ -77,5 +77,18 @@ if (require.main === module) {
         } catch (error) {
             console.error('Error:', error);
         }
+
+        // Example 6: Wikipedia
+        console.log('6. Fastcompany with bot-protection:');
+        console.log('─'.repeat(50));
+        try {
+            const result3 = await fetchCitationMetadata({
+                url: 'https://www.fastcompany.com/3033567/brainstorming-doesnt-work-try-this-technique-instead'
+            }, console.log);
+            console.log('Citation:', formatCitation(result3.metadata));
+        } catch (error) {
+            console.error('Error:', error);
+        }
+        console.log('\n');
     })();
 }

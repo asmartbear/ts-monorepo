@@ -41,9 +41,20 @@ export async function scrapeUrl(url: string): Promise<MetadataResult> {
     // Fetch URL
     const response = await fetch(url, {
         headers: {
-            'User-Agent': 'Mozilla/5.0 (compatible; CitationBot/1.0)'
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+            // 'Accept-Encoding': 'gzip, deflate, br',
+            'Referer': 'https://www.google.com/',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'cross-site',
+            'Sec-Fetch-User': '?1',
+            'Cache-Control': 'max-age=0'
         },
-        timeout: 10000,
+        timeout: 20000,
     });
     if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);

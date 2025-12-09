@@ -434,6 +434,14 @@ test('simplified to key', () => {
     expect(f([1, 2, 3] as const)).toEqual('f1e46f328e6decd56c64dd5e761dc2b7')
     expect(f({})).toEqual('99914b932bd37a50b983c5e7c90ae93b')
     expect(f({ a: 1 })).toEqual('bb6cb5c68df4652941caf652a366f2d8')
+
+    // That structured objects didn't change their hash values
+    expect(f([])).toEqual(simplifiedToHash([]))
+    expect(f([1])).toEqual(simplifiedToHash([1]))
+    expect(f([1, 2, 3])).toEqual(simplifiedToHash([1, 2, 3]))
+    expect(f([1, 2, 3] as const)).toEqual(simplifiedToHash([1, 2, 3] as const))
+    expect(f({})).toEqual(simplifiedToHash({}))
+    expect(f({ a: 1 })).toEqual(simplifiedToHash({ a: 1 }))
 })
 
 test("simplified comparison", () => {

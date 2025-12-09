@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1
+
+### Patch Changes
+
+- exports manual html citation functions
+
 ## 1.1.0
 
 ### Minor Changes

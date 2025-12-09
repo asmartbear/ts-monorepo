@@ -1,11 +1,11 @@
 import * as T from '@asmartbear/testutil'
 import { Path } from '@asmartbear/filesystem'
-import { parseUrlData } from '../src/urls'
+import { parseHtmlForMetadata } from '../src/urls'
 import { convertMetascaperResultToCitationMetadata, formatCitation } from '../src/citation'
 
 /** Parse HTML from our test directory */
 async function parseTextHtml(url: string, filename: string) {
-    return parseUrlData(url, await new Path(__dirname).join('html', filename).readAsString())
+    return parseHtmlForMetadata(url, await new Path(__dirname).join('html', filename).readAsString())
 }
 
 test('fastcompany', async () => {

@@ -28,7 +28,7 @@ const globalScraper = metascraper([
 /**
  * Parse data that has already been loaded.
  */
-export function parseUrlData(url: string, html: string): Promise<MetadataResult> {
+export function parseHtmlForMetadata(url: string, html: string): Promise<MetadataResult> {
     return globalScraper({ html, url })
 }
 
@@ -61,7 +61,7 @@ export async function scrapeUrl(url: string): Promise<MetadataResult> {
     }
 
     // Parse and override result
-    const result = await parseUrlData(url, await response.text())
+    const result = await parseHtmlForMetadata(url, await response.text())
     result.url = response.url           // in case of redirects
     return result
 }

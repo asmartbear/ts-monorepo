@@ -1,0 +1,102 @@
+{
+  "name": "@asmartbear/citation",
+  "version": "1.1.0",
+  "description": "Parsing and loading citations",
+  "keywords": [
+    "status",
+    "cli"
+  ],
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "test": "jest --runInBand",
+    "watch": "npm test -- --watchAll",
+    "watch-cov": "npm test -- --watchAll --coverage",
+    "coverage": "npm test -- --coverage",
+    "clean": "rimraf dist *.tsbuildinfo .tsbuildinfo coverage",
+    "prebuild": "npm run clean",
+    "build": "tsc",
+    "main": "tsc && node dist/index.js",
+    "prerelease": "npm test && npm run build"
+  },
+  "devDependencies": {
+    "@asmartbear/filesystem": "*",
+    "@asmartbear/testutil": "*",
+    "@types/jest": "^30.0.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.10.1",
+    "@types/node-fetch": "^2.6.13",
+    "benchmark": "^2.1.4",
+    "jest": "^30.2.0",
+    "rimraf": "^6.1.2",
+    "ts-jest": "^29.4.5",
+    "ts-loader": "^9.5.4",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@citation-js/core": "^0.7.21",
+    "@citation-js/plugin-csl": "^0.7.21",
+    "@citation-js/plugin-doi": "^0.7.21",
+    "@citation-js/plugin-isbn": "^0.4.0",
+    "@metascraper/helpers": "^5.49.5",
+    "metascraper": "^5.49.5",
+    "metascraper-author": "^5.49.5",
+    "metascraper-date": "^5.49.5",
+    "metascraper-description": "^5.49.5",
+    "metascraper-image": "^5.49.5",
+    "metascraper-logo": "^5.49.5",
+    "metascraper-publisher": "^5.49.5",
+    "metascraper-title": "^5.49.5",
+    "metascraper-url": "^5.49.5"
+  },
+  "license": "MIT",
+  "repository": {
+    "url": "git@github.com:asmartbear/ts-monorepo.git",
+    "type": "git"
+  },
+  "bugs": {
+    "url": "https://github.com/asmartbear/ts-monorepo/issues"
+  },
+  "author": {
+    "name": "Jason Cohen",
+    "url": "https://github.com/asmartbear"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "types": "dist/index.d.ts",
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "cache": true,
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "transform": {
+      "^.+\\.tsx?$": [
+        "ts-jest",
+        {
+          "tsconfig": {
+            "composite": false
+          }
+        }
+      ]
+    },
+    "testRegex": "test/.+\\.test\\.(ts|tsx|js)$",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/",
+      "/test/"
+    ],
+    "moduleNameMapper": {
+      "^iso-639-3/to-1$": "<rootDir>/../../node_modules/iso-639-3/to-1.json",
+      "^@asmartbear/(.*)$": "<rootDir>/../$1/src"
+    }
+  }
+}

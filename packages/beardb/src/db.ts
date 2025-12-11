@@ -78,6 +78,8 @@ export class Database {
     /**
      * Creates a new document, saving it immediately with this state but continuing to edit it in memory.
      * 
+     * Trying to load this by ID or name in the same session will return this cached document object as well.
+     * 
      * @param frontMatterType the data type for the front matter
      * @param ns namespace for the document's ID
      * @param name ID unique within the namespace
@@ -96,7 +98,8 @@ export class Database {
     }
 
     /**
-     * Loads an existing document by name or, if it does not exist, creates one with the given initialized data.
+     * Loads an existing document by name (from cache or the database) or, if it does not exist,
+     * creates one with the given initialized data.
      * 
      * @param frontMatterType the data type for the front matter
      * @param ns namespace for the document's ID

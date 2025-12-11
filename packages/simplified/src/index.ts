@@ -43,21 +43,21 @@ export type Simple =
     ;
 
 /** Simple data type where some or all could be wrapped in a Promise, including recursively. */
-export type PromisedSimple =
-    Primative
-    | PromisedSimple[]
-    | { [key: string | number]: PromisedSimple }
-    | Promise<Simple>
-    ;
+// export type PromisedSimple =
+//     Primative
+//     | PromisedSimple[]
+//     | { [key: string | number]: PromisedSimple }
+//     | Promise<Simple>
+//     ;
 
-/** If a promise, the inner promised type, else itself. */
-export type ResolvedPromiseSimple<T> =
-    T extends Primative ? T :
-    T extends Promise<infer U> ? U :
-    T extends Array<infer U> ? ResolvedPromiseSimple<U>[] :
-    T extends object ? { [K in keyof T]: ResolvedPromiseSimple<T[K]> } :
-    never;
-;
+// /** If a promise, the inner promised type, else itself. */
+// export type ResolvedPromiseSimple<T> =
+//     T extends Primative ? T :
+//     T extends Promise<infer U> ? U :
+//     T extends Array<infer U> ? ResolvedPromiseSimple<U>[] :
+//     T extends object ? { [K in keyof T]: ResolvedPromiseSimple<T[K]> } :
+//     never;
+// ;
 
 /**
  * Something that knows how to convert itself to a `Simple` type.
@@ -79,7 +79,7 @@ export type Simplified<T> =
     T extends Date ? { t: number } :
     T extends RegExp ? string :
     T extends URL ? string :
-    T extends Promise<infer U> ? Promise<Simplified<U>> :
+    // T extends Promise<infer U> ? Promise<Simplified<U>> :
     T extends Array<infer U> ? Simplified<U>[] :
     T extends Set<infer U> ? Simplified<U>[] :
     T extends Map<infer K extends string | number, infer U> ? { [Key in K]: Simplified<U extends undefined ? never : U> } :
@@ -93,7 +93,6 @@ export type Simplified<T> =
 export type Simplifiable =
     undefined | null | boolean | number | string | symbol | bigint
     | Date | RegExp | URL
-    | Promise<Simplifiable>
     | Set<Simplifiable> | Map<Simplifiable, Simplifiable> | Iterable<Simplifiable>
     | ISimplifiable<Simple>
     | Simplifiable[]
@@ -119,11 +118,8 @@ export function isSimple(x: any): x is Simple {
 /**
  * Simplify any data, with Typescript inference as best as possible.
  * 
- * Types that adhere to `Simplifiable` will be translated exactly and reliable, otherwise
+ * Types that adhere to `Simplifiable` will be translated exactly and reliably, otherwise
  * they're still translated but it's best-effort, e.g. introspecting fields in classes.
- * 
- * The result is nearly always `Simple`; exceptions are things like `Promise<Simple>`, but this
- * can arise only if the input was a Promise, which Typescript already knows.
  * 
  * @param x the value to simplify
  * @param skip if given, this is a set of objects to report as `null` rather than simplify, often to prevent infinite descent.
@@ -233,9 +229,7 @@ export function simplify<T>(x: T, skip?: Set<any>): Simplified<T> {
  * 
  * Typescript is still invoked for Promises, keeping them as Promises.
  */
-export function simplifyOpaqueType<T extends Promise<any>>(x: T): Promise<Simple>;
-export function simplifyOpaqueType<T>(x: T): Simple;
-export function simplifyOpaqueType(x: any): Simple | Promise<Simple> {
+export function simplifyOpaqueType<T>(x: T): Simple {
     return simplify(x)
 }
 
@@ -243,24 +237,24 @@ export function simplifyOpaqueType(x: any): Simple | Promise<Simple> {
  * If we simplified something that includes promises (itself, or recursively), waits for all those
  * promises recursively, returning a promise that completely resolves all promises into a realized `Simple` object.
  */
-export function simplifiedAwait<T extends Primative>(x: T): T;
-export function simplifiedAwait<T extends Promise<Simple>>(x: T): T;
-export function simplifiedAwait<T extends PromisedSimple>(x: T): Promise<ResolvedPromiseSimple<T>>;
-export function simplifiedAwait<T extends PromisedSimple>(x: T): Promise<ResolvedPromiseSimple<T>> | T {
-    switch (typeof x) {
-        case "undefined":
-        case "boolean":
-        case "number":
-        case "string":
-            return x
-        case "object":
-            if (x === null) return x
-            if (isPromise(x)) return x      // it's a promise already, so pass it on through
-            if (Array.isArray(x)) return Promise.all(x.map(simplifiedAwait)) as any
-            // Object; do it as an array of pairs.
-            return simplifiedAwait(Object.entries(x)).then(pairs => Object.fromEntries(pairs))
-    }
-}
+// export function simplifiedAwait<T extends Primative>(x: T): T;
+// export function simplifiedAwait<T extends Promise<Simple>>(x: T): T;
+// export function simplifiedAwait<T extends PromisedSimple>(x: T): Promise<ResolvedPromiseSimple<T>>;
+// export function simplifiedAwait<T extends PromisedSimple>(x: T): Promise<ResolvedPromiseSimple<T>> | T {
+//     switch (typeof x) {
+//         case "undefined":
+//         case "boolean":
+//         case "number":
+//         case "string":
+//             return x
+//         case "object":
+//             if (x === null) return x
+//             if (isPromise(x)) return x      // it's a promise already, so pass it on through
+//             if (Array.isArray(x)) return Promise.all(x.map(simplifiedAwait)) as any
+//             // Object; do it as an array of pairs.
+//             return simplifiedAwait(Object.entries(x)).then(pairs => Object.fromEntries(pairs))
+//     }
+// }
 
 /**
  * Can subclass this to create a walker that receives a `Simple` type, being invoked on every item,
@@ -361,7 +355,7 @@ export function simplifiedCompare(a: Simple, b: Simple): number {
     // Strings
     if (typeof a === "string") {
         if (typeof b === "string") {
-            return a.localeCompare(b);
+            return a < b ? -1 : 1
         }
         return -1
     } else if (typeof b === "string") {
@@ -387,9 +381,11 @@ export function simplifiedCompare(a: Simple, b: Simple): number {
     const ak = Object.keys(a), bk = Object.keys(b);
     const len = Math.min(ak.length, bk.length);
     for (let k = 0; k < len; ++k) {
-        let cmp = ak[k].localeCompare(bk[k]);
-        if (cmp !== 0) return cmp;
-        cmp = simplifiedCompare(a[ak[k]], b[bk[k]]);
+        const p = ak[k]
+        const q = bk[k]
+        if (p < q) return -1
+        if (p > q) return 1
+        const cmp = simplifiedCompare(a[p], b[q]);
         if (cmp !== 0) return cmp;
     }
     return ak.length - bk.length;

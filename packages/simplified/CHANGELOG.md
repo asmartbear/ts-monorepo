@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.11
+
+### Patch Changes
+
+- Simplified removed nested promise stuff
+
 ## 1.0.10
 
 ### Patch Changes

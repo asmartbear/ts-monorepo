@@ -51,7 +51,7 @@ export class ValidationError extends Error implements ISimplifiable<string> {
         public path: string[] = []
     ) {
         let msg = expectedPrefix ?? "Expected " + type.description
-        msg += ` but got ${typeof valueEncountered}: ${String(valueEncountered)}`
+        msg += ` but got ${typeof valueEncountered}: ${simplifiedToDisplay(simplifyOpaqueType(valueEncountered))}`
         super(msg);
         this.name = 'ValidationError';
         this.myMessage = msg

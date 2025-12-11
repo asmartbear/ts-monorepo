@@ -1,5 +1,5 @@
 import { isPromise } from 'util/types';
-import { getClassOf, isClassObject, isIterable, isPlainObject, isSimple, Simple, simplifiedAwait, simplifiedCompare, simplifiedJoin, simplifiedToDisplay, simplifiedToHash, simplifiedToJSON, simplifiedToKey, SimplifiedWalker, simplify, simplifyOpaqueType } from '../src/index';
+import { getClassOf, isClassObject, isIterable, isPlainObject, isSimple, Simple, simplifiedCompare, simplifiedJoin, simplifiedToDisplay, simplifiedToHash, simplifiedToJSON, simplifiedToKey, SimplifiedWalker, simplify, simplifyOpaqueType } from '../src/index';
 
 class MyTestClass {
     public a: number = 123
@@ -269,47 +269,51 @@ test('simplify buffer arrays', () => {
 })
 
 test('simplify opaque', async () => {
-    function createPromise() { return new Promise<Set<number>>(success => success(new Set([3, 2, 1]))) }
     expect(simplifyOpaqueType(new Set([3, 2, 1]))).toEqual([1, 2, 3])
-    const promisedResult = simplifyOpaqueType(createPromise())
-    expect(isPromise(promisedResult)).toEqual(true)         // "promise" type was maintained
-    expect(await promisedResult).toEqual([1, 2, 3])         // inside the promise was the expected simplification
 })
 
-test("simplify nested promises", async () => {
-    function createPromise() { return new Promise<Set<number>>(success => success(new Set([3, 2, 1]))) }
+// test('simplify opaque promise', async () => {
+//     function createPromise() { return new Promise<Set<number>>(success => success(new Set([3, 2, 1]))) }
+//     expect(simplifyOpaqueType(new Set([3, 2, 1]))).toEqual([1, 2, 3])
+//     const promisedResult = simplifyOpaqueType(createPromise())
+//     expect(isPromise(promisedResult)).toEqual(true)         // "promise" type was maintained
+//     expect(await promisedResult).toEqual([1, 2, 3])         // inside the promise was the expected simplification
+// })
 
-    // With primative types, behaves like `simplify()`
-    expect(simplifiedAwait(undefined)).toEqual(undefined)
-    expect(simplifiedAwait(null)).toEqual(null)
-    expect(simplifiedAwait(true)).toEqual(true)
-    expect(simplifiedAwait(123)).toEqual(123)
-    expect(simplifiedAwait("hi")).toEqual("hi")
+// test("simplify nested promises", async () => {
+//     function createPromise() { return new Promise<Set<number>>(success => success(new Set([3, 2, 1]))) }
 
-    // With arrays, it's a promise even when that's not "necessary" because of recursion
-    const arr = simplifiedAwait([1, 2, 3])
-    expect(isPromise(arr)).toEqual(true)
-    expect(await arr).toEqual([1, 2, 3])
+//     // With primative types, behaves like `simplify()`
+//     expect(simplifiedAwait(undefined)).toEqual(undefined)
+//     expect(simplifiedAwait(null)).toEqual(null)
+//     expect(simplifiedAwait(true)).toEqual(true)
+//     expect(simplifiedAwait(123)).toEqual(123)
+//     expect(simplifiedAwait("hi")).toEqual("hi")
 
-    // With objects, it's a promise even when that's not "necessary" because of recursion
-    const obj = simplifiedAwait(simplify({ b: 1, a: 2 }))
-    expect(isPromise(obj)).toEqual(true)
-    expect(await obj).toEqual({ a: 2, b: 1 })
+//     // With arrays, it's a promise even when that's not "necessary" because of recursion
+//     const arr = simplifiedAwait([1, 2, 3])
+//     expect(isPromise(arr)).toEqual(true)
+//     expect(await arr).toEqual([1, 2, 3])
 
-    // With a direct promise, just pass it through
-    const prom = simplifiedAwait(simplify(createPromise()))
-    expect(isPromise(prom)).toEqual(true)
-    expect(await prom).toEqual([1, 2, 3])
+//     // With objects, it's a promise even when that's not "necessary" because of recursion
+//     const obj = simplifiedAwait(simplify({ b: 1, a: 2 }))
+//     expect(isPromise(obj)).toEqual(true)
+//     expect(await obj).toEqual({ a: 2, b: 1 })
 
-    // Recursive promises
-    const s = simplify({ a: 1, s: createPromise(), z: [1, 2, createPromise()] })
-    expect(isPromise(s)).toEqual(false)         // the parent object is not a promise
-    expect(isPromise(s.s)).toEqual(true)        // the promised set is still a promise, just as an array of numbers (eventually)
-    const p = simplifiedAwait(s)
-    expect(isPromise(p)).toEqual(true)          // outer is now a promise
-    const result = await p
-    expect(result).toEqual({ a: 1, s: [1, 2, 3], z: [1, 2, [1, 2, 3]] })       // waiting on the one promise resolves everything
-})
+//     // With a direct promise, just pass it through
+//     const prom = simplifiedAwait(simplify(createPromise()))
+//     expect(isPromise(prom)).toEqual(true)
+//     expect(await prom).toEqual([1, 2, 3])
+
+//     // Recursive promises
+//     const s = simplify({ a: 1, s: createPromise(), z: [1, 2, createPromise()] })
+//     expect(isPromise(s)).toEqual(false)         // the parent object is not a promise
+//     expect(isPromise(s.s)).toEqual(true)        // the promised set is still a promise, just as an array of numbers (eventually)
+//     const p = simplifiedAwait(s)
+//     expect(isPromise(p)).toEqual(true)          // outer is now a promise
+//     const result = await p
+//     expect(result).toEqual({ a: 1, s: [1, 2, 3], z: [1, 2, [1, 2, 3]] })       // waiting on the one promise resolves everything
+// })
 
 test('simplify recursive objects', () => {
     const p: any = { p: 1 }

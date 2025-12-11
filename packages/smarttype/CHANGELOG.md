@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.17
+
+### Patch Changes
+
+- Simplified removed nested promise stuff
+- Updated dependencies
+  - @asmartbear/simplified@1.0.11
+
 ## 1.0.16
 
 ### Patch Changes

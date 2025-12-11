@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.18
+
+### Patch Changes
+
+- revert error printing the object
+
 ## 1.0.17
 
 ### Patch Changes

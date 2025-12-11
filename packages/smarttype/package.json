@@ -1,6 +1,6 @@
 {
   "name": "@asmartbear/smarttype",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "Data types that parse, validate, transform, marshal, compare, and hash",
   "keywords": [
     "json"

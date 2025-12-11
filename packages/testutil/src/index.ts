@@ -57,7 +57,7 @@ export function ge<T extends ComparableNative>(actual: T, expected: T, message?:
 }
 
 /** Tests whether `simplify(actual)` equals a string; useful for simpler checks of complex objects */
-export function isSimple(actual: Exclude<Simplifiable, Promise<Simplifiable>>, expected: string, message?: string): void {
+export function isSimple(actual: Simplifiable, expected: string, message?: string): void {
     try {
         expect(simplifiedToDisplay(simplifyOpaqueType(actual))).toEqual(expected)
     } catch (e: any) { if (message) { e.message = `${e.message}\n\n${message}` } throw e }

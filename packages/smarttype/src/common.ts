@@ -1,4 +1,4 @@
-import { Simple, ISimplifiable, simplifiedToDisplay, simplifiedToHash, simplifyOpaqueType, SimplifiedWalker, getClassOf } from "@asmartbear/simplified";
+import { Simple, ISimplifiable, simplifiedToDisplay, simplifiedToHash, getClassOf, isSimple } from "@asmartbear/simplified";
 
 export type Primative = boolean | number | string | null
 export type JSONType = null | boolean | string | number | JSONType[] | { [K: string]: JSONType } | { [K: number]: JSONType }
@@ -51,7 +51,9 @@ export class ValidationError extends Error implements ISimplifiable<string> {
         public path: string[] = []
     ) {
         let msg = expectedPrefix ?? "Expected " + type.description
-        msg += ` but got ${typeof valueEncountered}: ${simplifiedToDisplay(simplifyOpaqueType(valueEncountered))}`
+        // If the value is already simple, then format it nicely, otherwise don't even try
+        // because we run into all kinds of trouble even trying with complex objects.
+        msg += ` but got ${typeof valueEncountered}: ${isSimple(valueEncountered) ? simplifiedToDisplay(valueEncountered) : String(valueEncountered)}`
         super(msg);
         this.name = 'ValidationError';
         this.myMessage = msg

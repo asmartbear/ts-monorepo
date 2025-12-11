@@ -251,12 +251,6 @@ test('simplify class', () => {
     expect(simplify(simplify(my))).toEqual(simplify(my))      // idempotent
 })
 
-test('simplify Promise', async () => {
-    function createPromise() { return new Promise<Set<number>>(success => success(new Set([3, 2, 1]))) }
-    expect(Array.from(await createPromise())).toEqual([3, 2, 1])
-    expect(await simplify(createPromise())).toEqual([1, 2, 3])
-})
-
 test('simplify buffer arrays', () => {
     expect(simplify(new Int8Array([0, 1, 2, 3]))).toEqual([0, 1, 2, 3])
     expect(simplify(new Uint8Array([0, 1, 2, 3]))).toEqual([0, 1, 2, 3])
@@ -272,13 +266,12 @@ test('simplify opaque', async () => {
     expect(simplifyOpaqueType(new Set([3, 2, 1]))).toEqual([1, 2, 3])
 })
 
-// test('simplify opaque promise', async () => {
-//     function createPromise() { return new Promise<Set<number>>(success => success(new Set([3, 2, 1]))) }
-//     expect(simplifyOpaqueType(new Set([3, 2, 1]))).toEqual([1, 2, 3])
-//     const promisedResult = simplifyOpaqueType(createPromise())
-//     expect(isPromise(promisedResult)).toEqual(true)         // "promise" type was maintained
-//     expect(await promisedResult).toEqual([1, 2, 3])         // inside the promise was the expected simplification
-// })
+test('simplify Promise', async () => {
+    function createPromise() { return new Promise<Set<number>>(success => success(new Set([3, 2, 1]))) }
+    expect(Array.from(await createPromise())).toEqual([3, 2, 1])
+    expect(() => simplify(createPromise())).toThrow()
+    expect(() => simplifyOpaqueType(createPromise())).toThrow()
+})
 
 // test("simplify nested promises", async () => {
 //     function createPromise() { return new Promise<Set<number>>(success => success(new Set([3, 2, 1]))) }

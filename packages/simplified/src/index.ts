@@ -79,7 +79,7 @@ export type Simplified<T> =
     T extends Date ? { t: number } :
     T extends RegExp ? string :
     T extends URL ? string :
-    // T extends Promise<infer U> ? Promise<Simplified<U>> :
+    T extends Promise<infer U> ? never :            // create error if you try to convert promises
     T extends Array<infer U> ? Simplified<U>[] :
     T extends Set<infer U> ? Simplified<U>[] :
     T extends Map<infer K extends string | number, infer U> ? { [Key in K]: Simplified<U extends undefined ? never : U> } :
@@ -177,7 +177,10 @@ export function simplify<T>(x: T, skip?: Set<any>): Simplified<T> {
             skip.add(x)
 
             // Promises get chained onto and then returned as-is for final resolution.
-            if (isPromise(x)) return x.then(y => simplify(y, skip)) as any
+            if (isPromise(x)) {
+                throw new Error("Cannot simplify a Promise.  Instead, `await` or `then()` the result.")
+                // return x.then(y => simplify(y, skip)) as any
+            }
 
             // Array-like
             if (Array.isArray(x)) return x.map(y => simplify(y, skip)) as any

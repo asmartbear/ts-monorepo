@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.12
+
+### Patch Changes
+
+- a52f16f: Throw error if try to simplify a promise
+
 ## 1.0.11
 
 ### Patch Changes

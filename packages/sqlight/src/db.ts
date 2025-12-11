@@ -19,6 +19,8 @@ export class SqlightDatabase<TABLES extends Record<string, SchemaTable>> {
         public readonly schema: SqlSchema<TABLES>,
         /** Path to the database on disk */
         public readonly sqliteDatabasePath: Path,
+        /** Whether to emit debugging messages */
+        public readonly fDebugMessage?: (msg: string) => void,
     ) {
         this.mutex = new Mutex()
     }
@@ -62,7 +64,7 @@ export class SqlightDatabase<TABLES extends Record<string, SchemaTable>> {
         return this._db
     }
 
-    /** Closes connection to the datbase, or does nothing if it's already closed. */
+    /** Closes connection to the database, or does nothing if it's already closed. */
     close(): Promise<this> {
         return this.mutex.runExclusive(async () => {
             if (this._db) {
@@ -77,8 +79,12 @@ export class SqlightDatabase<TABLES extends Record<string, SchemaTable>> {
     async queryStatement(sql: string | D.Nullish): Promise<void> {
         if (D.NOT_EMPTY(sql)) {
             await this.mutex.runExclusive(async () => {
+                const startTime = Date.now()
                 const db = await this.db()
-                return await db.exec(sql)
+                await db.exec(sql)
+                if (this.fDebugMessage) {
+                    this.fDebugMessage(`statement in ${Date.now() - startTime}ms: ${sql}`)
+                }
             })
         }
     }
@@ -86,16 +92,26 @@ export class SqlightDatabase<TABLES extends Record<string, SchemaTable>> {
     /** Runs an arbitrary query inside the mutex, loading all rows into memory at once. */
     queryAll<ROW extends Record<string, any>>(sql: string): Promise<ROW[]> {
         return this.mutex.runExclusive(async () => {
+            const startTime = Date.now()
             const db = await this.db()
-            return await db.all(sql)
+            const result = await db.all(sql)
+            if (this.fDebugMessage) {
+                this.fDebugMessage(`queryAll in ${Date.now() - startTime}ms, ${result.length} rows: ${sql}`)
+            }
+            return result
         })
     }
 
     /** Runs an arbitrary query inside the mutex, returning the first row or `undefined` if no rows. */
     queryOne<ROW extends Record<string, any>>(sql: string): Promise<ROW | undefined> {
         return this.mutex.runExclusive(async () => {
+            const startTime = Date.now()
             const db = await this.db()
-            return await db.get<ROW>(sql)
+            const result = await db.get<ROW>(sql)
+            if (this.fDebugMessage) {
+                this.fDebugMessage(`queryOne in ${Date.now() - startTime}ms, ${result === undefined ? "miss" : "hit"}: ${sql}`)
+            }
+            return result
         })
     }
 

@@ -265,7 +265,7 @@ export class BearSqlNote {
             .select('name', tags.ZTITLE)
             .where(map.Z_5NOTES.eq(this.pk))
         const rows = await this.database.selectAll(q)
-        const tagList = D.MAP(rows, row => row.name ?? undefined)       // XXXX: fix when NULLs are native
+        const tagList = D.MAP(rows, row => row.name)
         return new Set(removeParentTags(tagList))
     }
 
@@ -285,7 +285,7 @@ export class BearSqlNote {
             .where(att.ZPERMANENTLYDELETED.not())
             .where(att.ZDOWNLOADED)
         const rows = await this.database.selectAll(q)
-        return rows.map(row => new BearSqlAttachment(row as any))       // XXXX: fix when NULLs are native
+        return rows.map(row => new BearSqlAttachment(row))
     }
 
     /**

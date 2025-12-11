@@ -1,6 +1,6 @@
 {
   "name": "@asmartbear/sqlight",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "description": "Typescript-safe SQL builder for SQLite",
   "keywords": [
     "sqlite"
@@ -34,7 +34,6 @@
   "dependencies": {
     "@asmartbear/dyn": "*",
     "@asmartbear/filesystem": "*",
-    "@asmartbear/simplified": "*",
     "async-mutex": "^0.5.0",
     "gray-matter": "^4.0.3",
     "js-yaml": "^4.1.1",

@@ -232,7 +232,7 @@ export function simplify<T>(x: T, skip?: Set<any>): Simplified<T> {
  * 
  * Typescript is still invoked for Promises, keeping them as Promises.
  */
-export function simplifyOpaqueType<T>(x: T): Simple {
+export function simplifyOpaqueType(x: any): Simple {
     return simplify(x)
 }
 

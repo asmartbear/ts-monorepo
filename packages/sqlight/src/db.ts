@@ -59,20 +59,22 @@ export class SqlightDatabase<TABLES extends Record<string, SchemaTable>> {
                 filename: this.sqliteDatabasePath.absPath,
                 driver: sqllite3.Database,
             })
-            return this._db!
         }
-        return this._db
+        return this._db!
     }
 
     /** Closes connection to the database, or does nothing if it's already closed. */
-    close(): Promise<this> {
-        return this.mutex.runExclusive(async () => {
-            if (this._db) {
-                await this._db.close()
-                this._db = null
-            }
-            return this
-        })
+    async close(): Promise<this> {
+        if (this._db) {     // if already closed, don't need to go into the mutex
+            await this.mutex.runExclusive(async () => {
+                if (this._db) {         // check that someone else didn't already close it
+                    const db = this._db
+                    this._db = null             // mark it closed so other threads reopen or don't try to close
+                    await db.close()
+                }
+            })
+        }
+        return this
     }
 
     /** Runs arbitrary SQL as a statement, without a resultset, or does nothing if the statement is empty */

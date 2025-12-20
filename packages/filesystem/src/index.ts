@@ -603,9 +603,17 @@ export class Path {
 
     /**
      * Opens this file using the application that is associated with it; does not wait for that to happen before returning.
+     * 
+     * @param app if non-trivial, open using the application named this, otherwise uses the default application
      */
-    openInApplication() {
-        execFile('open', [this.absPath])
+    openInApplication(app?: string | null | undefined) {
+        const args: string[] = []
+        if (app) {
+            args.push('-a')
+            args.push(app)
+        }
+        args.push(this.absPath)
+        execFile('open', args)
     }
 
     /**

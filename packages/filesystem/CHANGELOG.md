@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.8
+
+### Patch Changes
+
+- Can open in a non-default application
+
 ### [1.0.7](https://github.com/asmartbear/filesystem/compare/v1.0.6...v1.0.7) (2025-12-04)
 
 ### [1.0.6](https://github.com/asmartbear/filesystem/compare/v1.0.5...v1.0.6) (2025-12-04)

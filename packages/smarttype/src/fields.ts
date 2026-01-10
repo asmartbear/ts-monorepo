@@ -101,11 +101,23 @@ class SmartFields<ST extends { readonly [K: string]: SmartType<any> }> extends S
     }
 
     fromJSON(js: JsonFor<ST>) {
-        return Object.fromEntries(
-            Object.entries(js).map(
-                ([k, y]) => [k, y === undefined ? undefined : this.types[k].fromJSON(y)]
-            )
-        ) as NativeFor<ST>
+
+        // Load everything from the JS object into pairs for ourselves.
+        // Convert based on the type of that field, which might be extraneous.
+        const myEntries: [string, any][] = []
+        for (const [k, x] of Object.entries(js)) {
+            const type = this.types[k]
+            if (!type) {            // JS has a field we don't have?
+                if (this.options.ignoreExtraFields) continue      // maybe that's OK!
+                throw new ValidationError(this, k, `Extraneous JSON field [${k}]`)
+            }
+            if (x !== undefined) {            // if undefined, it's like it's not here
+                myEntries.push([k, type.fromJSON(x)])
+            }
+        }
+
+        // Reconstruct the object
+        return Object.fromEntries(myEntries) as NativeFor<ST>
     }
 
     /** Makes all fields optional */

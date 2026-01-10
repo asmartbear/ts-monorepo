@@ -125,6 +125,30 @@ test('smart fields made partial', () => {
     T.eq(opt.fromJSON({ x: undefined, s: "foo" }), { s: "foo" }, "explicitly undefined and tacitly")
 })
 
+test('load obj from JSON with invalid extra fields', () => {
+    let ty = V.OBJ({
+        n: V.NUM(),
+    }, { ignoreExtraFields: false })
+
+    T.eq(ty.input({ n: 123 }), { n: 123 })
+    T.throws(() => ty.input({ n: 123, taco: "good" }), V.ValidationError, "extra fields are not allowed")
+
+    T.eq(ty.fromJSON({ n: 123 }), { n: 123 })
+    T.throws(() => ty.fromJSON({ n: 123, taco: "good" } as any), V.ValidationError, "ignores extra fields because we said to in its definition")
+})
+
+test('load obj from JSON with ignored extra fields', () => {
+    let ty = V.OBJ({
+        n: V.NUM(),
+    }, { ignoreExtraFields: true })
+
+    T.eq(ty.input({ n: 123 }), { n: 123 })
+    T.eq(ty.input({ n: 123, taco: "good" }), { n: 123 })
+
+    T.eq(ty.fromJSON({ n: 123 }), { n: 123 })
+    T.eq(ty.fromJSON({ n: 123, taco: "good" } as any), { n: 123 }, "ignores extra fields because we said to in its definition")
+})
+
 test('smart fields with extra fields provided', () => {
     const allowExtra = V.OBJ({
         x: V.NUM(),

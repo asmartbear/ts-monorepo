@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.19
+
+### Patch Changes
+
+- Support 'ignoreExtraFields' with fromJSON() on an object
+
 ## 1.0.18
 
 ### Patch Changes

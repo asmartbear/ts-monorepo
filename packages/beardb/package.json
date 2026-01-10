@@ -1,6 +1,6 @@
 {
   "name": "@asmartbear/beardb",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Document-database using Bear as a backend",
   "keywords": [
     "sqlite"

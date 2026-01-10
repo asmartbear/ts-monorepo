@@ -56,7 +56,7 @@ test('creating, saving, retrieving some documents', async () => {
     a.frontMatter.foo[1] = 999
     T.eq(a.isDirty, true)
     T.eq(b.isDirty, true)
-    await db.save()
+    T.eq(await db.save(), 2)
     T.eq(a.isDirty, false as any)
     T.eq(b.isDirty, false as any)
     T.be(await db.loadById(FM, a.uniqueId), a, "still same in-memory object")
@@ -79,6 +79,34 @@ test('creating, saving, retrieving some documents', async () => {
     T.is(d != b, "different objects")
     T.eq(d.frontMatter, b.frontMatter)
     T.eq(d.text, b.text)
+
+    // Loading again comes from cache (both by ID and by name), unless we ask for a disconnected object
+    T.is(d === await db.loadByName(FM, b.ns, b.name), "now if we load again we get it from cache")
+    const d2 = await db.loadByName(FM, b.ns, b.name, { disconnectedDocument: true })
+    T.defined(d2)
+    T.is(d2 != d, "different objects")
+    T.eq(d2.frontMatter, d.frontMatter)
+    T.eq(d2.text, d.text)
+    const d3 = await db.loadById(FM, b.uniqueId, { disconnectedDocument: true })
+    T.defined(d3)
+    T.is(d3 != d2, "different objects")
+    T.eq(d3.frontMatter, d.frontMatter)
+    T.eq(d3.text, d.text)
+
+    // Changing a disconnected object doesn't change the cached object
+    T.eq(d2.isDirty, false)
+    d2.frontMatter.foo.push(123)
+    T.eq(d2.isDirty as boolean, true, "yes, it was changed")
+    T.eq(d2.frontMatter.foo, [9, 16, 25, 123], "d2 is changed")
+    T.eq(d.frontMatter.foo, [9, 16, 25], "d is unchanged")
+    T.eq(d.isDirty as boolean, false, "d was not changed")
+    T.eq(d3.frontMatter.foo, [9, 16, 25], "d3 is unchanged")
+    T.eq(d3.isDirty as boolean, false, "d3 was not changed")
+
+    // Saving the database doesn't save the disconnected object data
+    T.eq(await db.save(), 0)
+    T.eq(d2.frontMatter.foo, [9, 16, 25, 123], "d2 is changed")
+    T.eq(d.frontMatter.foo, [9, 16, 25], "d is unchanged")
 })
 
 test('load or create', async () => {

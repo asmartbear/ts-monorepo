@@ -3,6 +3,15 @@ import { Document } from "./doc";
 import { IDriver, DocumentStorageData } from "./driver"
 import invariant from 'tiny-invariant';
 
+type LoadOptions = {
+    /**
+     * If `true`, the returned Document is not connected to the database, so changes made to it will never be saved.
+     * 
+     * Useful for read-only, non-cached objects.
+     */
+    disconnectedDocument?: boolean,
+}
+
 /** Database manager, leveraging a driver for how to load and store documents. */
 export class Database {
 
@@ -36,13 +45,16 @@ export class Database {
      * 
      * Uses in-memory cache of Documents, so the same Document object is returned if repeatedly requested.
      */
-    async loadById<ST extends SmartType>(frontMatterType: ST, uniqueId: string): Promise<Document<ST> | undefined> {
-        let doc = this.docsByUniqueId.get(uniqueId)
+    async loadById<ST extends SmartType>(frontMatterType: ST, uniqueId: string, options?: LoadOptions): Promise<Document<ST> | undefined> {
+        const useCache = !options?.disconnectedDocument
+        let doc = useCache ? this.docsByUniqueId.get(uniqueId) : undefined
         if (!doc) {
             const data = await this.driver.loadById(uniqueId)
             if (!data) return undefined
             const doc = Document.fromStorageData(frontMatterType, data)
-            this.setCache(doc)
+            if (useCache) {
+                this.setCache(doc)
+            }
             return doc
         }
         return doc.assertFrontMatterType(frontMatterType)
@@ -53,13 +65,16 @@ export class Database {
      * 
      * Uses in-memory cache of Documents, so the same Document object is returned if repeatedly requested.
      */
-    async loadByName<ST extends SmartType>(frontMatterType: ST, ns: string, name: string): Promise<Document<ST> | undefined> {
-        let doc = this.docsByName.get(this.getNameKey(ns, name))
+    async loadByName<ST extends SmartType>(frontMatterType: ST, ns: string, name: string, options?: LoadOptions): Promise<Document<ST> | undefined> {
+        const useCache = !options?.disconnectedDocument
+        let doc = useCache ? this.docsByName.get(this.getNameKey(ns, name)) : undefined
         if (!doc) {
             const data = await this.driver.loadByName(ns, name)
             if (!data) return undefined
             const doc = Document.fromStorageData(frontMatterType, data)
-            this.setCache(doc)
+            if (useCache) {
+                this.setCache(doc)
+            }
             return doc
         }
         return doc.assertFrontMatterType(frontMatterType)

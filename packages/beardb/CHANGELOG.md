@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.12
+
+### Patch Changes
+
+- Ability to load a document read-only and disconnected from BearDB
+
 ## 1.0.11
 
 ### Patch Changes

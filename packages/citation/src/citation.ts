@@ -1,10 +1,20 @@
-import { Cite } from '@citation-js/core';
+import { Cite, plugins } from '@citation-js/core';
 import '@citation-js/plugin-csl';
 import '@citation-js/plugin-doi';
 import '@citation-js/plugin-isbn';
 import { scrapeUrl } from './urls'
 import { CitationMetadataInput, CitationMetadata, MetadataFetchResult, CSLDate, FormatOptions, CSLPerson } from './types'
 import { MetadataResult } from 'metascraper';
+import { CHICAGO_NOTE_BIBLIOGRAPHY_CSL } from './chicago-csl';
+
+// @citation-js/plugin-csl only ships apa/harvard1/vancouver built in. Register the Chicago
+// style so requests for it actually format as Chicago instead of silently falling back to APA.
+// (The en-US locale needed by this style is already bundled by plugin-csl.) Idempotent: the
+// templates registry throws if a name is re-added, so guard against double-registration.
+const cslTemplates = plugins.config.get('@csl').templates;
+if (!cslTemplates.has('chicago-note-bibliography')) {
+    cslTemplates.add('chicago-note-bibliography', CHICAGO_NOTE_BIBLIOGRAPHY_CSL);
+}
 
 /**
  * Converts directly from URL scrape result to our general citation fields.
@@ -222,8 +232,10 @@ export function formatCitation(
         // Create citation object
         const cite = new Cite(cleanMetadata);
 
-        // Generate formatted citation
-        const formatted = cite.format('bibliography', {
+        // Generate formatted citation in NOTE form (e.g. Chicago footnote style:
+        // "First Last, "Title," Container vol, no. N (year): pages.") rather than the
+        // bibliography entry, which inverts the first author and uses period separators.
+        const formatted = cite.format('citation', {
             format,
             template: style,
             lang

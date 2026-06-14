@@ -33,5 +33,5 @@ test('fastcompany', async () => {
         issued: { "date-parts": [[2014, 7, 29]] },
         "container-title": "Fast Company",
     })
-    T.eq(formatCitation(citeMeta), "Greenfield, R. (2014, July 29). <i>Brainstorming Doesn’t Work; Try This Technique Instead</i>. Fast Company. https://www.fastcompany.com/3033567/brainstorming-doesnt-work-try-this-technique-instead/")
+    T.eq(formatCitation(citeMeta), "Rebecca Greenfield, “Brainstorming Doesn’t Work; Try This Technique Instead,” Fast Company, July 29, 2014, https://www.fastcompany.com/3033567/brainstorming-doesnt-work-try-this-technique-instead/.")
 })

@@ -17,6 +17,23 @@ declare module '@citation-js/core' {
             }
         ): string;
     }
+
+    /** Plugin registry. `config.get('@csl')` exposes the CSL plugin's template/locale stores. */
+    export const plugins: {
+        config: {
+            get(name: '@csl'): {
+                templates: {
+                    has(name: string): boolean;
+                    add(name: string, csl: string): void;
+                    remove(name: string): void;
+                };
+                locales: {
+                    has(name: string): boolean;
+                    add(name: string, locale: string): void;
+                };
+            };
+        };
+    };
 }
 
 declare module '@citation-js/plugin-csl' { }

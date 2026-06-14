@@ -4,7 +4,7 @@ export { parseHtmlForMetadata } from "./urls"
 export { fetchCitationMetadata, formatCitation, convertMetascaperResultToCitationMetadata } from "./citation"
 
 /** A version number that is changed when we change some logic in citation-generation, so e.g. caches could be refreshed. */
-export const CITATION_SYSTEM_VERSION = 8
+export const CITATION_SYSTEM_VERSION = 9
 
 // ============================================================================
 // EXAMPLE USAGE (if run directly)

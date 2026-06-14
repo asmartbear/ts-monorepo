@@ -3,8 +3,14 @@ import { fetchCitationMetadata, formatCitation } from "./citation";
 export { parseHtmlForMetadata } from "./urls"
 export { fetchCitationMetadata, formatCitation, convertMetascaperResultToCitationMetadata } from "./citation"
 
-/** A version number that is changed when we change some logic in citation-generation, so e.g. caches could be refreshed. */
-export const CITATION_SYSTEM_VERSION = 9
+/**
+ * A version number that is changed when we change some logic in citation-generation, so e.g. caches could be refreshed.
+ * IMPORTANT: consumers fold this into their *metadata* (scrape/DOI/ISBN) cache key, so bumping it forces a full
+ * re-fetch of every citation's source data from the network. Only bump it for changes to how metadata is FETCHED.
+ * Pure output/formatting changes (e.g. switching CSL style) must NOT bump this — let the consumer bump its own
+ * format-cache version instead, which regenerates rendering from already-cached metadata.
+ */
+export const CITATION_SYSTEM_VERSION = 8
 
 // ============================================================================
 // EXAMPLE USAGE (if run directly)

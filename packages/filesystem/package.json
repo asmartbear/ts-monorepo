@@ -1,6 +1,6 @@
 {
   "name": "@asmartbear/filesystem",
-  "version": "1.0.8",
+  "version": "2.0.0",
   "description": "Class-based filesystem access, with lots of nice, Promise-based utilities",
   "keywords": [
     "fs"

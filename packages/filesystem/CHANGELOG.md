@@ -1,5 +1,25 @@
 # Changelog
 
+## 2.0.0
+
+### Major Changes
+
+- `copyTo` takes a `CopyCondition` instead of an `onlyIfNewer` boolean: `'always'`,
+  `'if-newer'`, or the new `'if-content-differs'`.
+
+  `'if-newer'` only compares mtime and size, which silently does nothing useful when
+  the source is regenerated from scratch on every run -- a rebuilt file is always
+  "newer" even when its bytes never changed, so the copy happens anyway and the
+  destination gets a fresh mtime. That defeats every downstream "mtime + size"
+  staleness check (rsync, CDN uploads, build caches).
+
+  `'if-content-differs'` compares sizes and then bytes, and leaves an identical
+  destination completely untouched, mtime included. Also exposed as
+  `Path.hasSameContentAs()`.
+
+  Migration: `copyTo(dest, true)` -> `copyTo(dest, 'if-newer')`,
+  `copyTo(dest, false)` -> `copyTo(dest, 'always')`.
+
 ## 1.0.8
 
 ### Patch Changes

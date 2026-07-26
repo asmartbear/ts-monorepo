@@ -95,7 +95,9 @@ npx turbo run build --force
 
 ## Release / Deploy
 
-Releases are driven by **Changesets**. There is no CI publish — `npm run publish` from a clean working tree on `main` is how things ship.
+Versioning is driven by **Changesets**; the actual publish is **not** — see "Why publishing doesn't use Changesets" below. There is no CI publish — `npm run publish` from a clean working tree on `main` is how things ship.
+
+**Run `npm run publish` from a real terminal, never from a tool or wrapper that redirects stdin.** npm only opens the browser-based passkey prompt when stdin and stdout are both a TTY; otherwise it rethrows the 2FA error and the publish fails.
 
 ```bash
 # 1. As you make user-facing changes, record what bumped
@@ -113,15 +115,30 @@ npm run version
 git add .
 git commit -m "Version packages"
 
-# 4. Publish to npm + push tags
+# 4. Publish to npm + push tags  (from a real terminal — see note above)
 npm run publish
-#    Runs: changeset publish && git push --follow-tags
-#    `changeset publish` publishes each newly-versioned package to npm
-#    (access is "restricted" per .changeset/config.json — published as private
-#    scoped packages unless individual package.json overrides).
+#    Runs: ./publish.sh && ./verify-published.sh && git push --follow-tags
+#    publish.sh    — `npm publish` for each package whose local version isn't on
+#                    the registry yet, then git-tags each success. Expect a
+#                    browser passkey prompt. `./publish.sh --dry-run` reports
+#                    what it would do without publishing anything.
+#    verify-published.sh — backstop confirming every local version really is on
+#                    the registry; blocks the push if not.
+#    Access is "restricted" per .changeset/config.json — published as private
+#    scoped packages unless an individual package.json overrides.
 ```
 
 If a build or test fails during `npm run version`, fix it before re-running — never bypass.
+If the guard blocks the push, the publish genuinely didn't happen; fix it and re-run, don't bypass.
+
+### Why publishing doesn't use Changesets
+
+`changeset publish` is deliberately not used. Two independent reasons, both learned the hard way:
+
+1. **It can't do passkeys.** Changesets implements its own OTP prompt that accepts only a typed TOTP code from an authenticator app. npm's own CLI (`npm/lib/utils/auth.js`) tries a WebAuthn/passkey browser flow *first* when the registry offers one, and falls back to a typed code only otherwise. Going through Changesets never reaches npm's passkey branch, so on a passkey-only account it asks for a code that doesn't exist. Calling `npm publish` directly keeps us on npm's flow.
+2. **It exits 0 when publishes fail.** A 2FA prompt, expired token, or network error all leave `changeset publish` reporting success. That once pushed a version commit for a package npm never received.
+
+`changeset add` and `changeset version` are still used and are fine — the problem is only the publish step. Don't "simplify" the release script by wiring `changeset publish` back in.
 
 ## Planning
 

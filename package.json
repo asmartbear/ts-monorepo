@@ -12,7 +12,7 @@
         "changeset": "changeset",
         "version": "turbo run build && turbo run test && changeset version",
         "release": "changeset release",
-        "publish": "changeset publish && git push --follow-tags"
+        "publish": "./publish.sh && ./verify-published.sh && git push --follow-tags"
     },
     "devDependencies": {
         "@changesets/cli": "^2.27.1",

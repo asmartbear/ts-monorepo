@@ -1,6 +1,8 @@
 import * as T from '@asmartbear/testutil'
 import { Path } from '../src/index'
-import { homedir } from 'os'
+import { homedir, tmpdir } from 'os'
+import { promises as fsp } from 'fs'
+import { join } from 'path'
 
 const TEST = new Path(__dirname).join("data")
 
@@ -172,3 +174,33 @@ test('temp path does not exist, but its directory does', async () => {
 // test('open something', () => {
 //     Path.userHomeDir.join('Downloads', 'Syllabus.pdf').revealInFinder()
 // })
+test('copyTo conditions', async () => {
+    const dir = new Path(await fsp.mkdtemp(join(tmpdir(), 'copyto-')))
+    const src = dir.join('src.bin')
+    const dst = dir.join('dst.bin')
+
+    await src.writeAsString('hello')
+    T.be(await src.copyTo(dst, 'always'), true, "copies when destination is missing")
+
+    // Make the source look newer without changing its bytes -- exactly what a
+    // regenerated-from-scratch build tree does.
+    const future = new Date(Date.now() + 60_000)
+    await fsp.utimes(src.absPath, future, future)
+
+    T.be(await src.copyTo(dst, 'if-newer'), true, "if-newer copies a newer-but-identical file")
+
+    // Captured after the if-newer copy, which legitimately rewrote the destination.
+    const dstMtime = (await fsp.stat(dst.absPath)).mtimeMs
+    T.be(await src.copyTo(dst, 'if-content-differs'), false, "if-content-differs skips identical bytes")
+    T.be((await fsp.stat(dst.absPath)).mtimeMs, dstMtime, "...and leaves the destination mtime untouched")
+
+    // A real change must still be copied.
+    await src.writeAsString('goodbye')
+    T.be(await src.copyTo(dst, 'if-content-differs'), true, "if-content-differs copies changed bytes")
+    T.eq(await dst.readAsString(), 'goodbye')
+
+    // `always` copies even when identical.
+    T.be(await src.copyTo(dst, 'always'), true, "always copies regardless")
+
+    await fsp.rm(dir.absPath, { recursive: true, force: true })
+})

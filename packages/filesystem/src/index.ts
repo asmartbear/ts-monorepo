@@ -55,6 +55,20 @@ export type PathCallbacks = {
 }
 
 /**
+ * When a copy should actually happen.
+ *
+ * - `always` -- unconditionally.
+ * - `if-newer` -- only if the source is newer, or sizes mismatch, or either file is missing.
+ *   Costs a stat, but is useless when the source is regenerated from scratch each run: a
+ *   rebuilt source is always "newer" even when its bytes never changed.
+ * - `if-content-differs` -- only if the bytes actually differ. Costs a read of both files,
+ *   but leaves an identical destination completely untouched, mtime included. That matters
+ *   because "mtime + size" is how everything downstream decides what is stale: rsync, CDN
+ *   uploads, and build caches all re-do work when an unchanged file looks new.
+ */
+export type CopyCondition = 'always' | 'if-newer' | 'if-content-differs'
+
+/**
  * Represents a path in the filesystem.
  */
 export class Path {
@@ -281,6 +295,21 @@ export class Path {
     }
 
     /**
+     * True if this file and the other both exist and are byte-for-byte identical.
+     * Compares sizes first, so differing files usually cost no reads at all.
+     */
+    async hasSameContentAs(other: Path): Promise<boolean> {
+        try {
+            const [myStats, otherStats] = await Promise.all([fs.promises.stat(this.absPath), fs.promises.stat(other.absPath)]);
+            if (myStats.size !== otherStats.size) return false
+            const [mine, theirs] = await Promise.all([fs.promises.readFile(this.absPath), fs.promises.readFile(other.absPath)]);
+            return mine.equals(theirs)
+        } catch {
+            return false      // either file missing or unreadable, so treat as "differs"
+        }
+    }
+
+    /**
      * True if this file is newer than the other file, or if the sizes don't match, or if either file doesn't exist.
      */
     isNewerThanSync(other: Path): boolean {
@@ -432,11 +461,14 @@ export class Path {
      * Copies this file to another location, creating parent directories if needed, using efficient copy-on-write where possible.
      * 
      * @param dest The destination path to copy to.
-     * @param onlyIfNewer If true, only copies the file if the source is newer than the destination, or if sizes mismatch or if either file doesn't exist.
+     * @param when Under what condition to actually copy -- see {@link CopyCondition}.
      * @returns true if the file was actually copied, false otherwise.
      */
-    async copyTo(dest: Path, onlyIfNewer: boolean): Promise<boolean> {
-        if (onlyIfNewer && !await this.isNewerThan(dest)) {
+    async copyTo(dest: Path, when: CopyCondition): Promise<boolean> {
+        if (when === 'if-newer' && !await this.isNewerThan(dest)) {
+            return false
+        }
+        if (when === 'if-content-differs' && await this.hasSameContentAs(dest)) {
             return false
         }
         try {

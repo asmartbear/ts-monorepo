@@ -4,6 +4,10 @@ A monorepo of independently-versioned TypeScript packages published to npm under
 
 **Single-author project.** This repo is Jason's. Project-scoped Claude Code configuration here (`.claude/skills/`, `.claude/agents/`, settings, this file, per-package `CLAUDE.md`s) is the right home for tooling — prefer it over `~/.claude/` unless something is genuinely cross-project.
 
+## Communication
+
+- Only report to me in ASD-STE100 Simplified Technical English.
+
 ## Monorepo Mechanics
 
 This is an **npm workspaces + Turborepo + Changesets** monorepo. The three tools each own one concern:

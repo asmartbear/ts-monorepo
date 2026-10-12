@@ -123,7 +123,8 @@ git commit -m "Version packages"
 npm run publish
 #    Runs: ./publish.sh && ./verify-published.sh && git push --follow-tags
 #    publish.sh    — `npm publish` for each package whose local version isn't on
-#                    the registry yet, then git-tags each success. Expect a
+#                    the registry yet, then git-tags each success (annotated
+#                    tags, so `--follow-tags` pushes them). Expect a
 #                    browser passkey prompt. `./publish.sh --dry-run` reports
 #                    what it would do without publishing anything.
 #    verify-published.sh — backstop confirming every local version really is on
@@ -132,6 +133,7 @@ npm run publish
 #    scoped packages unless an individual package.json overrides.
 ```
 
+If `npm publish` fails with `404 Not Found - PUT`, the npm login has expired: run `npm login` and re-run. `publish.sh` checks `npm whoami` first for this reason.
 If a build or test fails during `npm run version`, fix it before re-running — never bypass.
 If the guard blocks the push, the publish genuinely didn't happen; fix it and re-run, don't bypass.
 

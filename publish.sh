@@ -43,6 +43,15 @@ elif [[ -n ${1:-} ]]; then
     exit 1
 fi
 
+# Fail fast when npm has no valid login. Without one, `npm view` 404s on every
+# restricted package (so a dry run reports nearly everything as unpublished),
+# and `npm publish` fails with a misleading "404 Not Found - PUT" instead of
+# 401 and never reaches the passkey prompt.
+if ! npm whoami >/dev/null 2>&1; then
+    echo "publish.sh: npm has no valid login (npm whoami failed). Run 'npm login', then re-run." >&2
+    exit 1
+fi
+
 # Collect the package list up front rather than streaming it into the loop.
 # A `while read ... < <(...)` binds the loop body's stdin to the process
 # substitution, which would make npm see a non-TTY stdin and silently skip the
@@ -86,7 +95,11 @@ for line in "${packages[@]}"; do
     if git rev-parse -q --verify "refs/tags/${spec}" >/dev/null; then
         echo "    tag ${spec} already exists — leaving it"
     else
-        git tag "$spec"
+        # Annotated, not lightweight: the root `publish` script pushes with
+        # `git push --follow-tags`, which pushes annotated tags only. A
+        # lightweight tag stays local and never reaches GitHub (this happened
+        # with filesystem@2.0.0 and jobs@1.1.0).
+        git tag -a "$spec" -m "$spec"
         echo "    tagged ${spec}"
     fi
 done

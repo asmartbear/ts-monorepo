@@ -64,6 +64,7 @@ export type TaskRunnerConstructor<Tags extends string> = {
 
   /**
    * The maximum concurrency level per tag; missing tags are unlimited.
+   * This is only the starting value: change a tag's limit later with `TaskRunner.setTagConcurrency()`.
    */
   concurrencyPerTag?: Partial<Record<Tags, number>>,
 }
@@ -77,6 +78,12 @@ export type TaskConstructor<Tags extends string> = {
    * Used for human-readable output.
    */
   title: string,
+
+  /**
+   * An opaque identifier chosen by the caller, e.g. to find the task again in `TaskRunner.unfinishedTasks()`.
+   * Unlike `title`, it is never changed.  The runner does not use it, and does not require it to be unique.
+   */
+  key?: string,
 
   /**
    * Tags to apply to this task.
@@ -111,6 +118,11 @@ export class Task<Tags extends string> {
   public readonly title: string
 
   /**
+   * The caller's opaque identifier from `TaskConstructor.key`, unchanged, or `undefined` if none was given.
+   */
+  public readonly key: string | undefined
+
+  /**
    * Tags that are applied to this task.
    */
   public readonly tags: readonly Tags[]
@@ -142,6 +154,7 @@ export class Task<Tags extends string> {
 
   constructor(config: TaskConstructor<Tags>, private readonly executionFunction: TaskExecutionFunction) {
     this.title = config.title
+    this.key = config.key
     this.tags = config.tags ?? []
     this.dependentTags = config.dependentTags ?? []
     this.dependentTasks = config.dependentTasks ? Array.from(config.dependentTasks) : []
@@ -170,9 +183,8 @@ export class Task<Tags extends string> {
 
     // Check concurrency-based tags
     for (const tag of this.tags) {
-      const concurrency = runner.config.concurrencyPerTag?.[tag] ?? 9999;
-      const current = runner.numRunningTasksByTag.get(tag) ?? 0
-      if (current >= concurrency) return false;
+      const limit = runner.getTagConcurrency(tag)
+      if (limit !== undefined && (runner.numRunningTasksByTag.get(tag) ?? 0) >= limit) return false;
     }
 
     return true;
@@ -267,9 +279,16 @@ export class TaskRunner<Tags extends string> {
    */
   private _error: TaskError<Tags> | null = null;
 
+  /**
+   * The running limit per tag; a missing tag is unlimited.  Seeded from `config.concurrencyPerTag`, then owned
+   * by `setTagConcurrency()`, so later changes to `config.concurrencyPerTag` have no effect.
+   */
+  private readonly tagConcurrency: Map<Tags, number>
+
   constructor(public readonly config: TaskRunnerConstructor<Tags>) {
     this.concurrencyLevel = config.concurrencyLevel ?? getNumCpus().length;
     this.status = config.showStatus ? new StatusManager() : null
+    this.tagConcurrency = new Map(Object.entries(config.concurrencyPerTag ?? {}) as [Tags, number][])
   }
 
   /**
@@ -279,6 +298,46 @@ export class TaskRunner<Tags extends string> {
    */
   get numUnfinishedTasks(): number {
     return this.waitingQueue.length + this.runningTasks.length + this.readyQueue.length
+  }
+
+  /**
+   * Gets every task that is not yet `Done` or `Error`: tasks that are ready to run, waiting, or running.
+   *
+   * @returns A new array on each call, in no particular order.
+   */
+  unfinishedTasks(): readonly Task<Tags>[] {
+    return [...this.readyQueue, ...this.waitingQueue, ...this.runningTasks]
+  }
+
+  /**
+   * Gets the most tasks with the given tag that may run at once.
+   *
+   * @param tag The tag.
+   * @returns The limit, or `undefined` if the tag is unlimited.
+   */
+  getTagConcurrency(tag: Tags): number | undefined {
+    return this.tagConcurrency.get(tag)
+  }
+
+  /**
+   * Sets the most tasks with the given tag that may run at once, or removes that limit.
+   * Raising or removing a limit starts waiting tasks at once, if workers are free.
+   * Lowering a limit does not stop tasks that are running already; it only holds back new ones.
+   *
+   * @param tag The tag.
+   * @param limit The new limit (`0` holds back every task with the tag), or `undefined` to make the tag unlimited.
+   * @throws RangeError if `limit` is negative or `NaN`.
+   */
+  setTagConcurrency(tag: Tags, limit: number | undefined): void {
+    if (limit === undefined) {
+      this.tagConcurrency.delete(tag)
+    } else if (limit >= 0) {
+      this.tagConcurrency.set(tag, limit)
+    } else {
+      throw new RangeError(`Tag concurrency for "${tag}" must be zero or more, or undefined; got ${limit}`)
+    }
+    // A higher limit can make waiting tasks ready, just as a finished task can.
+    this.promoteReadyWaitingTasks()
   }
 
   /**
@@ -342,6 +401,18 @@ export class TaskRunner<Tags extends string> {
     this.readyQueue.push(task)
     this.readyQueue.sort((a, b) => a.priority - b.priority)   // FIXME: Presumably faster to insert after binary search
     this.readySemaphore.release()
+  }
+
+  /**
+   * Moves every waiting task that is now ready to the ready queue, which wakes workers to run them.
+   * Call this after anything that can make a waiting task ready.
+   */
+  private promoteReadyWaitingTasks(): void {
+    for (var i = this.waitingQueue.length; --i >= 0;) {   // count backwards so we can remove items as we go
+      if (this.waitingQueue[i].isReady(this)) {
+        this.addToReady(this.waitingQueue.splice(i, 1)[0])
+      }
+    }
   }
 
   /**
@@ -484,12 +555,7 @@ export class TaskRunner<Tags extends string> {
       }
 
       // Whenever a task completes, it's possible that some waiting tasks are now ready.
-      // Find as many as we can and move them to the ready queue.
-      for (var i = this.waitingQueue.length; --i >= 0;) {   // count backwards so we can remove items as we go
-        if (this.waitingQueue[i].isReady(this)) {
-          this.addToReady(this.waitingQueue.splice(i, 1)[0])
-        }
-      }
+      this.promoteReadyWaitingTasks()
     }
 
     // Bye bye message!
